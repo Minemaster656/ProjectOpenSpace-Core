@@ -97,7 +97,7 @@ public class LaunchRocket implements CommandExecutor {
             return true;
         }
         if (top_y - down_y > 33) {
-            commandSender.sendMessage("Ракета должна быть не более 32 блоков высотой?!");
+            commandSender.sendMessage("Ракета должна быть не более 32 блоков высотой!");
             return true;
 
         }
@@ -105,18 +105,19 @@ public class LaunchRocket implements CommandExecutor {
         //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта x");
         int min_x = -2147483647;
         int max_x = -2147483647;
-        for (int x = player.getLocation().getBlockX() + 5; x >= player.getLocation().getBlockX(); x--) {
+        for (int x = player.getLocation().getBlockX() ; x <= player.getLocation().getBlockX()+5; x++) {
             if (world.getBlockAt(x, player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
                 max_x = x;
                 break;
             }
         }
-        for (int x = player.getLocation().getBlockX() - 5; x <= player.getLocation().getBlockX(); x++) {
+        for (int x = player.getLocation().getBlockX(); x >= player.getLocation().getBlockX()-5; x--) {
             if (world.getBlockAt(x, player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
                 min_x = x;
                 break;
             }
         }
+
         if (max_x == -2147483647 || min_x == -2147483647) {
             commandSender.sendMessage("По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось x не подходит по этому требованию!");
             return true;
@@ -142,6 +143,16 @@ public class LaunchRocket implements CommandExecutor {
             commandSender.sendMessage("По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось z не подходит под эти требования!");
             return true;
         }
+
+        if (player.getLocation().getBlockX()-min_x != max_x - player.getLocation().getBlockX() || player.getLocation().getBlockZ()-min_z != max_z - player.getLocation().getBlockZ()) {
+            commandSender.sendMessage("Ядро ракеты должно быть ровно по середине");
+            return true;
+        }
+        if (max_x-min_x != max_z-min_z) {
+            commandSender.sendMessage("Ракета должна быть квадратной, а не прямоугольной!");
+            return true;
+        }
+
         //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт z закончен.");
         //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта топливного бака...");
         Inventory fuel_container = null;
@@ -179,7 +190,7 @@ public class LaunchRocket implements CommandExecutor {
                     validateWallBlock(world.getBlockAt(min_x, y, max_z)) && validateWallBlock(world.getBlockAt(max_x, y, max_z)))
             ) {
 
-                commandSender.sendMessage("По углам ракеты до слоя с топливными блоками должны быть ножки из блоков корупса");
+                commandSender.sendMessage("По углам ракеты до слоя с хранилищем топлива должны быть ножки из блоков корупса");
                 return true;
             }
         }
@@ -273,6 +284,7 @@ public class LaunchRocket implements CommandExecutor {
         //TODO: подгрузка размера мира из конфига и прочей инфы о мире
         if (targetPlanet == null) {
             commandSender.sendMessage("§cПланета " + planet + " не существует!");
+            return true;
         }
         int rshiftx = core.getX() - min_x;
 
@@ -299,7 +311,7 @@ public class LaunchRocket implements CommandExecutor {
                     for (int y = loc.getBlockY() + (fuel_y - down_y - 1); y <= loc.getBlockY() + (top_y - down_y); y++) {
                         if (!isAir(world.getBlockAt(x, y, z))) {
                             isCheckFailed = true;
-                            commandSender.sendMessage(world.getBlockAt(x, y, z).getType().toString() + " X: " + x + " Y: " + y + " Z: " + z);
+//                            commandSender.sendMessage(world.getBlockAt(x, y, z).getType().toString() + " X: " + x + " Y: " + y + " Z: " + z);
                             commandSender.sendMessage("§cНе удалось разместить ракету");
                             break;
                         }
@@ -344,7 +356,10 @@ public class LaunchRocket implements CommandExecutor {
                     }
                 }
             }
+            core.getWorld().getBlockAt(core.getX(), down_y, core.getZ()).setType(Material.AIR, false);
 
+            targetPlanet.getBlockAt(rx, ty, rz).breakNaturally();
+            targetPlanet.getBlockAt(rx, ty, rz).setType(Material.LODESTONE, false);
 //            for (Chunk chunk: chunks){
 //                chunk.unload();
 //            }
