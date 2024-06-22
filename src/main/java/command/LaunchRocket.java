@@ -1,12 +1,11 @@
 package command;
 
-import com.gdt.pospcore.Main;
+import com.gdt.openspacecore.Main;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,7 +13,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 import util.Utils;
 
 import java.util.ArrayList;
@@ -22,260 +20,84 @@ import java.util.ArrayList;
 public class LaunchRocket implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if (!(commandSender instanceof Player)) return true;
-        boolean confirm = false;
-        String planet = "";
-//        int confirmArgID = 0;
-//        for (int i = 0; i < strings.length; i++) {
-//            if (strings[i].equalsIgnoreCase("confirm")) {
-//                confirm = true;
-//                confirmArgID = i;
-//                break;
-//            }
-//        }
-//        if (confirmArgID == 0) planet = strings[0];
-//
-//        else {
-//            if (strings.length > 1)
-//            planet = strings[1];
-//            else {
-//                commandSender.sendMessage("§4§lПожалуйста, укажите планету!");
-//                return true;
-//            }
-//        }
-        if (strings.length > 0) planet = strings[0];
-        if (strings.length > 1) confirm = strings[1].equalsIgnoreCase("confirm");
+        if (!(commandSender instanceof Player player))
+            return true;
 
-        if (planet.isEmpty()) {
+        if (strings.length == 0) {
             commandSender.sendMessage("§4§lПожалуйста, укажите планету!");
             return true;
         }
-        Player player = (Player) commandSender;
 
-        commandSender.sendMessage("§6§lЗапуск рассчёта целостности ракеты...");
-        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 5, 1);
-        Inventory core_inv;
         World world = player.getWorld();
         Block core = world.getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ());
         if (core.getType() != Material.DISPENSER) {
-            commandSender.sendMessage("Встаньте РОВНО НА раздатчик в КАБИНЕ ракеты!");
+            commandSender.sendMessage("§4§lВстаньте на раздатчик в кабине ракеты!");
             return true;
         }
 
+        String planet = strings[0];
+        boolean confirming = strings.length > 1 && strings[1].equalsIgnoreCase("confirm");
+
+        commandSender.sendMessage("§6§lCборка ракеты...");
+        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 5, 1);
+
+        Inventory core_inv;
         if (core.getState() instanceof InventoryHolder) {
             core_inv = ((InventoryHolder) (core.getState())).getInventory();
         } else return true;
 
-        ItemStack rocket_core_itemstack = core_inv.getItem(4);
+        // ItemStack rocket_core_itemstack = core_inv.getItem(4);
         //TODO: сделать чекер ядра
-        if (!true) {
+        if (false) {
             commandSender.sendMessage("В центральном слоте раздатчика должно лежать ядро ракеты!");
             return true;
         }
 
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта y");
-        int top_y = -10000;
-        int down_y = -10000;
-        for (int i = player.getLocation().getBlockY(); i < 321; i++) {
-            if (world.getBlockAt(player.getLocation().getBlockX(), i, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
-                top_y = i;
-                break;
-            }
-        }
-        for (int i = player.getLocation().getBlockY(); i >= -64; i--) {
-            if (world.getBlockAt(player.getLocation().getBlockX(), i, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
-                down_y = i;
-                break;
-            }
-        }
-        if (top_y <= -10000) {
-            commandSender.sendMessage("На макушке ракеты ровно над раздатчиком должен стоять магнетит!");
+        boolean failed = false;
+        int[] sizes = validateRocketSize(commandSender, world, player);
+
+        if(sizes.length == 1) {
+            commandSender.sendMessage("§4§lСборка провалена! Устраните выявленные ошибки и повторите снова.");
             return true;
         }
-        if (down_y <= -10000) {
-            commandSender.sendMessage("Под ракетой ровно под раздатчиком должен стоять магнетит!");
-            return true;
-        }
-        if (top_y - down_y > 33) {
-            commandSender.sendMessage("Ракета должна быть не более 32 блоков высотой!");
-            return true;
+        int top_y = sizes[0],
+            down_y = sizes[1],
+            max_x = sizes[2],
+            min_x = sizes[3],
+            max_z = sizes[4],
+            min_z = sizes[5];
+        commandSender.sendMessage("§6§lРакета собрана, проверка компонентов...");
 
-        }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт y закончен.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта x");
-        int min_x = -2147483647;
-        int max_x = -2147483647;
-        for (int x = player.getLocation().getBlockX() ; x <= player.getLocation().getBlockX()+5; x++) {
-            if (world.getBlockAt(x, player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
-                max_x = x;
-                break;
-            }
-        }
-        for (int x = player.getLocation().getBlockX(); x >= player.getLocation().getBlockX()-5; x--) {
-            if (world.getBlockAt(x, player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
-                min_x = x;
-                break;
-            }
-        }
+        int fuel_y = ValidateFuel(commandSender, player, down_y, world);
+        if (fuel_y == -100) return true;
+        commandSender.sendMessage("[ТОПЛИВО] §6§lОК");
 
-        if (max_x == -2147483647 || min_x == -2147483647) {
-            commandSender.sendMessage("По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось x не подходит по этому требованию!");
-            return true;
-        }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт x закончен.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта z");
-        int min_z = -2147483647;
-        int max_z = -2147483647;
+        Block[][][] rocket = getRocketBlocks(top_y, down_y, max_x, min_x, max_z, min_z, world);
 
-        for (int z = player.getLocation().getBlockZ() + 5; z >= player.getLocation().getBlockZ(); z--) {
-            if (world.getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, z).getType() == Material.LODESTONE) {
-                max_z = z;
-                break;
-            }
-        }
-        for (int z = player.getLocation().getBlockZ() - 5; z <= player.getLocation().getBlockZ(); z++) {
-            if (world.getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, z).getType() == Material.LODESTONE) {
-                min_z = z;
-                break;
-            }
-        }
-        if (max_z == -2147483647 || min_z == -2147483647) {
-            commandSender.sendMessage("По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось z не подходит под эти требования!");
-            return true;
-        }
-
-        if (player.getLocation().getBlockX()-min_x != max_x - player.getLocation().getBlockX() || player.getLocation().getBlockZ()-min_z != max_z - player.getLocation().getBlockZ()) {
-            commandSender.sendMessage("Ядро ракеты должно быть ровно по середине");
-            return true;
-        }
-        if (max_x-min_x != max_z-min_z) {
-            commandSender.sendMessage("Ракета должна быть квадратной, а не прямоугольной!");
-            return true;
-        }
-
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт z закончен.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта топливного бака...");
-        Inventory fuel_container = null;
-        int fuel_y = -100;
-        for (int y = down_y; y < player.getLocation().getBlockY(); y++) {
-            if (world.getBlockAt(player.getLocation().getBlockX(), y, player.getLocation().getBlockZ()).getState() instanceof InventoryHolder) {
-                fuel_container = ((InventoryHolder) (world.getBlockAt(player.getLocation().getBlockX(), y, player.getLocation().getBlockZ()).getState())).getInventory();
-                fuel_y = y;
-                break;
-            }
-        }
-        if (fuel_container == null || fuel_y == -100) {
-            commandSender.sendMessage("Внизу ракеты должно стоять хранилище для топлива (В ПОЛУ)!");
-            return true;
-        }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт топливного бака закончен.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск построения ракеты...");
-        Block[][][] rocket = new Block[top_y - down_y][max_x - min_x + 1][max_z - min_z + 1];
-        ArrayList<Block> rocket_blocks = new ArrayList<>();
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§e§lИнициализация массивов завершена. Запуск сканера...");
-
-        for (int y = down_y + 1; y <= top_y; y++) {
-            for (int x = min_x; x <= max_x; x++) {
-                for (int z = min_z; z <= max_z; z++) {
-                    rocket[y - down_y - 1][x - min_x][z - min_z] = world.getBlockAt(x, y, z);
-                    rocket_blocks.add(world.getBlockAt(x, y, z));
-                }
-            }
-        }
-
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lПостроение ракеты закончено.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск проверки стоек ракеты...");
-        for (int y = down_y + 1; y < fuel_y; y++) {
-            if (!(validateWallBlock(world.getBlockAt(min_x, y, min_z)) && validateWallBlock(world.getBlockAt(max_x, y, min_z)) &&
-                    validateWallBlock(world.getBlockAt(min_x, y, max_z)) && validateWallBlock(world.getBlockAt(max_x, y, max_z)))
-            ) {
-
-                commandSender.sendMessage("По углам ракеты до слоя с хранилищем топлива должны быть ножки из блоков корупса");
-                return true;
-            }
-        }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lПроверка стоек ракеты закончена.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта корпуса...");
-
+        if (validateRocketStands(commandSender, down_y, fuel_y, world, min_x, min_z, max_x, max_z)) return true;
+        commandSender.sendMessage("[СТОЙКИ] §6§lОК");
 
         int rocket_top_height = (int) (double) ((max_x - min_x - 1) / 2);
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§e§lВысота конуса ракеты - " + rocket_top_height);
         int rocket_walls_iron_blocks_count = 0;
-        int rocket_walls_quartz_blocks_count = 0;
-//        int rocket_walls_copper_blocks_count = 0;
         int rocket_walls_total_blocks_count = 0;
-        int rocket_walls_glass_blocks_count = 0;
-        int rocket_walls_lamps_blocks_count = 0;
-        int rocket_walls_redstone_blocks_count = 0;
-        int rocket_walls_glowstone_blocks_count = 0;
-        int rocket_walls_doors_blocks_count = 0;
-        int rocket_walls_lodestone_blocks_count = 0;
 
-
-        for (int y = 0; y < rocket.length - rocket_top_height; y++) {
-            for (int x = 0; x < rocket[0].length; x++) {
-                for (int z = 0; z < rocket[0][0].length; z++) {
-                    if (y == 0 || y == rocket.length - rocket_top_height - 1 || x == 0 || x == rocket[0].length - 1 || z == 0 || z == rocket[0][0].length - 1) {
-                        if (isAir(rocket[y][x][z]) && !(rocket[y][x][z].getY() < fuel_y)) {
-                            if (y != fuel_y & x != player.getLocation().getBlockX() & z != player.getLocation().getBlockZ()) {
-
-
-                                commandSender.sendMessage("В стенах, потолке и полу ракеты должны быть подходящие блоки! (блоки корпуса, двери, стекло, освещение)");
-                                commandSender.sendMessage("Координаты неверного блока: " + rocket[y][x][z].getX() + " " + rocket[y][x][z].getY() + " " + rocket[y][x][z].getZ());
-                                return true;
-                            } else {
-                                rocket_walls_total_blocks_count++;
-                                if (rocket[y][x][z].getType() == Material.IRON_BLOCK) {
-                                    rocket_walls_iron_blocks_count++;
-                                } else if (rocket[y][x][z].getType() == Material.QUARTZ_BLOCK || rocket[y][x][z].getType() == Material.SMOOTH_QUARTZ) {
-                                    rocket_walls_quartz_blocks_count++;
-//                                } else if (rocket[y][x][z].getType() == Material.COPPER_BLOCK ||
-//                                        rocket[y][x][z].getType() == Material.CUT_COPPER||
-//                                        rocket[y][x][z].getType() == Material.WAXED_CUT_COPPER ||
-//                                        rocket[y][x][z].getType() == Material.WEATHERED_COPPER ||
-//
-//
-//
-//                                ) {
-//                                    rocket_walls_grass_blocks_count++;
-                                } else if (rocket[y][x][z].getType() == Material.GLOWSTONE) {
-                                    rocket_walls_glowstone_blocks_count++;
-                                } else if (rocket[y][x][z].getType() == Material.REDSTONE_LAMP) {
-                                    rocket_walls_lamps_blocks_count++;
-                                } else if (rocket[y][x][z].getType() == Material.GLASS || rocket[y][x][z].getType() == Material.TINTED_GLASS) {
-                                    rocket_walls_glass_blocks_count++;
-                                } else if (rocket[y][x][z].getType() == Material.REDSTONE_BLOCK) {
-                                    rocket_walls_redstone_blocks_count++;
-                                } else if (rocket[y][x][z].getType() == Material.WARPED_DOOR || rocket[y][x][z].getType() == Material.CRIMSON_DOOR || rocket[y][x][z].getType() == Material.IRON_DOOR) {
-                                    rocket_walls_doors_blocks_count++;
-                                } else if (rocket[y][x][z].getType() == Material.LODESTONE) {
-                                    rocket_walls_lodestone_blocks_count++;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if ((double) rocket_walls_iron_blocks_count / rocket_walls_total_blocks_count < 0.5) {
-            commandSender.sendMessage("В стенах должно быть хотя бы 50% блоков железа!");
+        if (validateRocketIntegrity(commandSender, player, rocket, rocket_top_height, fuel_y, failed, rocket_walls_total_blocks_count, rocket_walls_iron_blocks_count))
             return true;
-        }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт корпуса ракеты закончен!");
-
+        commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §6§lОК");
 
         player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 5, 1);
-        if (!confirm) {
+        if (!confirming) {
+            commandSender.sendMessage("§6§lПроверки пройдены успешно!");
+            commandSender.sendMessage("§6Ракета готова к запуску!");
             commandSender.sendMessage("§aРакета собрана успешно! Для запуска пропишите эту же команду, но добавьте в аргументах (через пробел) §6confirm");
             commandSender.sendMessage("§eРакета будет высажена в случайном месте на планете, в случае, если такого места не будет найдено, вы останетесь на этой планете.\n" +
                     "Для высадки в конкретном месте, возьмите в руку посадочный лист!");
             return true;
-        } else
-            commandSender.sendMessage("§aРакета собрана успешно!");
-        commandSender.sendMessage("§4§lЗАПУСК РАКЕТЫ!!! ПЛАНЕТА: " + planet);
+        }
+        commandSender.sendMessage("§6§lПроверки пройдены успешно!");
+        commandSender.sendMessage("§6Ракета готова к запуску!");
 
         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //Это ИИ придумал написать ^
         // Так, а вообще, пора бы и ракету запустить. Причём по-настоящему!
 
         World targetPlanet = Main.plugin.getServer().getWorld(planet);
@@ -381,6 +203,97 @@ public class LaunchRocket implements CommandExecutor {
         return true;
     }
 
+    private boolean validateRocketIntegrity(CommandSender commandSender, Player player, Block[][][] rocket, int rocket_top_height, int fuel_y, boolean failed, int rocket_walls_total_blocks_count, int rocket_walls_iron_blocks_count) {
+        int failed_blocks = 0;
+
+        for (int y = 0; y < rocket.length - rocket_top_height; y++) {
+            for (int x = 0; x < rocket[0].length; x++) {
+                for (int z = 0; z < rocket[0][0].length; z++) {
+                    if (y != 0 && y != rocket.length - rocket_top_height - 1 &&
+                        x != 0 && x != rocket[0].length - 1 &&
+                        z != 0 && z != rocket[0][0].length - 1) continue;
+                    Block block = rocket[y][x][z];
+                    int rx = block.getX();
+                    int ry = block.getY();
+                    int rz = block.getZ();
+                    if (!isAir(block) && (block.getY() < fuel_y)) continue;
+
+                    if (y != fuel_y && x != player.getLocation().getBlockX() && z != player.getLocation().getBlockZ()) {
+                        // Я НЕ ПОНИМАЮ ПОМОГИТЕ ААААА
+                        // "В стенах, потолке и полу ракеты должны быть подходящие блоки! (блоки корпуса, двери, стекло, освещение)"
+                        if (!failed) {
+                            commandSender.sendMessage("§4Ракета не герметична!");
+                            failed = true;
+                        }
+                        commandSender.sendMessage("Координаты неверного блока: " + rx+" "+ry+" "+rz);
+                        failed_blocks++;
+                        rocket_walls_total_blocks_count++;
+                    } else {
+                        rocket_walls_total_blocks_count++;
+                        if (block.getType() == Material.IRON_BLOCK)
+                            rocket_walls_iron_blocks_count++;
+                    }
+                }
+            }
+        }
+        if (failed_blocks > 0) commandSender.sendMessage("§4Неверных блоков: "+failed_blocks);
+        if ((double) rocket_walls_iron_blocks_count / rocket_walls_total_blocks_count < 0.5) {
+            commandSender.sendMessage("В стенах должно быть хотя бы 50% блоков железа!");
+            failed = true;
+        }
+
+        if(failed){
+            commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §4§lПровал");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean validateRocketStands(CommandSender commandSender, int down_y, int fuel_y, World world, int min_x, int min_z, int max_x, int max_z) {
+        for (int y = down_y + 1; y < fuel_y; y++) {
+            if (!(validateWallBlock(world.getBlockAt(min_x, y, min_z)) &&
+                    validateWallBlock(world.getBlockAt(max_x, y, min_z)) &&
+                    validateWallBlock(world.getBlockAt(min_x, y, max_z)) &&
+                    validateWallBlock(world.getBlockAt(max_x, y, max_z)))
+            ) {
+                commandSender.sendMessage("[СТОЙКИ] §4§lПровал");
+                commandSender.sendMessage("§4По углам ракеты до слоя с хранилищем топлива должны быть стойки ракеты из блоков корпуса");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Block[][][] getRocketBlocks(int top_y, int down_y, int max_x, int min_x, int max_z, int min_z, World world) {
+        Block[][][] rocket = new Block[top_y - down_y][max_x - min_x + 1][max_z - min_z + 1];
+        for (int y = down_y + 1; y <= top_y; y++) {
+            for (int x = min_x; x <= max_x; x++) {
+                for (int z = min_z; z <= max_z; z++) {
+                    rocket[y - down_y - 1][x - min_x][z - min_z] = world.getBlockAt(x, y, z);
+                }
+            }
+        }
+        return rocket;
+    }
+
+    private static int ValidateFuel(CommandSender commandSender, Player player, int down_y, World world) {
+        Inventory fuel_container = null;
+        int fuel_y = -100;
+        for (int y = down_y; y < player.getLocation().getBlockY(); y++) {
+            if (world.getBlockAt(player.getLocation().getBlockX(), y, player.getLocation().getBlockZ()).getState() instanceof InventoryHolder) {
+                fuel_container = ((InventoryHolder) (world.getBlockAt(player.getLocation().getBlockX(), y, player.getLocation().getBlockZ()).getState())).getInventory();
+                fuel_y = y;
+                break;
+            }
+        }
+        if (fuel_container == null || fuel_y == -100) {
+            commandSender.sendMessage("[ТОПЛИВО] §4§lПровал");
+            commandSender.sendMessage("§4В полу ракеты должно стоять хранилище для топлива!");
+            return -100;
+        }
+        return fuel_y;
+    }
+
     public boolean validateWallBlock(Block block) {
         ArrayList<Material> validWallBlocks = new ArrayList<>();
         validWallBlocks.add(Material.IRON_BLOCK);
@@ -397,6 +310,86 @@ public class LaunchRocket implements CommandExecutor {
             }
         }
         return false;
+    }
+
+    public int[] validateRocketSize(CommandSender commandSender, World world, Player player) {
+        boolean failed = false;
+
+        int top_y  = -2147483647;
+        int down_y = -2147483647;
+        int min_x  = -2147483647;
+        int max_x  = -2147483647;
+        int min_z  = -2147483647;
+        int max_z  = -2147483647;
+
+        for (int i = player.getLocation().getBlockY(); i < 321; i++) {
+            if (world.getBlockAt(player.getLocation().getBlockX(), i, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
+                top_y = i;
+                break;
+            }
+        }
+        for (int i = player.getLocation().getBlockY(); i >= -64; i--) {
+            if (world.getBlockAt(player.getLocation().getBlockX(), i, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
+                down_y = i;
+                break;
+            }
+        }
+        for (int x = player.getLocation().getBlockX() ; x <= player.getLocation().getBlockX()+5; x++) {
+            if (world.getBlockAt(x, player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
+                max_x = x;
+                break;
+            }
+        }
+        for (int x = player.getLocation().getBlockX(); x >= player.getLocation().getBlockX()-5; x--) {
+            if (world.getBlockAt(x, player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
+                min_x = x;
+                break;
+            }
+        }
+        for (int z = player.getLocation().getBlockZ() + 5; z >= player.getLocation().getBlockZ(); z--) {
+            if (world.getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, z).getType() == Material.LODESTONE) {
+                max_z = z;
+                break;
+            }
+        }
+        for (int z = player.getLocation().getBlockZ() - 5; z <= player.getLocation().getBlockZ(); z++) {
+            if (world.getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, z).getType() == Material.LODESTONE) {
+                min_z = z;
+                break;
+            }
+        }
+
+        if (top_y <= -2147483647) {
+            commandSender.sendMessage("§4На макушке ракеты (ровно над раздатчиком) должен стоять магнетит!");
+            failed = true;
+        }
+        if (down_y <= -2147483647) {
+            commandSender.sendMessage("§4Под ракетой (ровно под раздатчиком) должен стоять магнетит!");
+            failed = true;
+        }
+        if (top_y - down_y > 33) {
+            commandSender.sendMessage("§4Ракета должна быть не более 32 блоков высотой!");
+            failed = true;
+        }
+
+        if (max_x == -2147483647 || min_x == -2147483647) {
+            commandSender.sendMessage("§4По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось x не подходит по этому требованию!");
+            failed = true;
+        }
+        if (max_z == -2147483647 || min_z == -2147483647) {
+            commandSender.sendMessage("§4По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось z не подходит под эти требования!");
+            failed = true;
+        }
+        if (player.getLocation().getBlockX()-min_x != max_x - player.getLocation().getBlockX() || player.getLocation().getBlockZ()-min_z != max_z - player.getLocation().getBlockZ()) {
+            commandSender.sendMessage("§4Ядро ракеты должно быть ровно по середине");
+            failed = true;
+        }
+        if (max_x-min_x != max_z-min_z) {
+            commandSender.sendMessage("§4Стороны ракеты по X и Z должны быть равны в длине.");
+            failed = true;
+        }
+        if (failed) return new int[]{-1};
+        return new int[]{top_y, down_y, max_x, min_x, max_z, min_z};
     }
 
     public boolean isAir(Block block) {
