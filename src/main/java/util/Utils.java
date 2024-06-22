@@ -2,6 +2,7 @@ package util;
 
 import com.gdt.openspacecore.Main;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -30,11 +31,11 @@ public class Utils {
                block.getType() == Material.VOID_AIR;
     }
 
-    public static World getWorldFromKey(String key) {
+    public static World getPlanet(String key) {
         NamespacedKey kkey = NamespacedKey.fromString(key);
-        for(World w : Main.plugin.getServer().getWorlds()) {
-            if (kkey == w.getKey()) return w;
-        }
+        for (World w : Bukkit.getWorlds()) {
+            if (w.getKey().equals(kkey)) return w;
+        };
         return null;
     }
 }

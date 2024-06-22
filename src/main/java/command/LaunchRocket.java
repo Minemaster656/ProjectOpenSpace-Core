@@ -100,7 +100,7 @@ public class LaunchRocket implements CommandExecutor {
         commandSender.sendMessage("§6§lПроверки пройдены успешно!");
         commandSender.sendMessage("§6Ракета готова к запуску!");
 
-        World targetPlanet = Utils.getWorldFromKey(planet);
+        World targetPlanet = Utils.getPlanet(planet);
         //TODO: подгрузка миров из конфига
         //TODO: проверка на существование планеты
         //TODO: подгрузка размера мира из конфига и прочей инфы о мире
@@ -108,8 +108,11 @@ public class LaunchRocket implements CommandExecutor {
             commandSender.sendMessage("§cПланета " + planet + " не существует!");
             return true;
         }
-        int rshiftx = core.getX() - min_x;
 
+// ЭТО ВСЕ НАДО ПЕРЕПИСАТЬ!
+// Жрет много ресурсов, вынести в отдельный поток?...
+/*
+        int rshiftx = core.getX() - min_x;
         int rshiftz = core.getZ() - min_z;
 
         for (int i = 0; i < 50; i++) { //TODO: конфиг количества попыток
@@ -200,7 +203,7 @@ public class LaunchRocket implements CommandExecutor {
             break;
         }
 
-
+*/
         return true;
     }
 
