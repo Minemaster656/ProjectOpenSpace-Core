@@ -1,0 +1,12 @@
+name: ProjectOpenSpace-Core
+version: '${version}'
+main: com.gdt.pospcore.Main
+api-version: '1.20'
+commands:
+  launchrocket:
+    description: Запускает ракету
+    aliases:
+      - lrocket
+      - rocket
+      - lr
+    usage: /<command> <planet> <confirm>
