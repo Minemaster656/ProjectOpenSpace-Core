@@ -1,10 +1,12 @@
 package command;
 
 import com.gdt.openspacecore.Main;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
@@ -16,6 +18,7 @@ import org.bukkit.inventory.InventoryHolder;
 import util.Utils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class LaunchRocket implements CommandExecutor {
     @Override
@@ -68,7 +71,7 @@ public class LaunchRocket implements CommandExecutor {
             min_z = sizes[5];
         commandSender.sendMessage("§6§lРакета собрана, проверка компонентов...");
 
-        int fuel_y = ValidateFuel(commandSender, player, down_y, world);
+        int fuel_y = validateRocketFuel(commandSender, player, down_y, world);
         if (fuel_y == -100) return true;
         commandSender.sendMessage("[ТОПЛИВО] §6§lОК");
 
@@ -77,11 +80,7 @@ public class LaunchRocket implements CommandExecutor {
         if (validateRocketStands(commandSender, down_y, fuel_y, world, min_x, min_z, max_x, max_z)) return true;
         commandSender.sendMessage("[СТОЙКИ] §6§lОК");
 
-        int rocket_top_height = (int) (double) ((max_x - min_x - 1) / 2);
-        int rocket_walls_iron_blocks_count = 0;
-        int rocket_walls_total_blocks_count = 0;
-
-        if (validateRocketIntegrity(commandSender, player, rocket, rocket_top_height, fuel_y, failed, rocket_walls_total_blocks_count, rocket_walls_iron_blocks_count))
+        if (validateRocketIntegrity(commandSender, rocket, down_y, fuel_y))
             return true;
         commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §6§lОК");
 
@@ -94,13 +93,14 @@ public class LaunchRocket implements CommandExecutor {
                     "Для высадки в конкретном месте, возьмите в руку посадочный лист!");
             return true;
         }
+
+        for (World w : Main.plugin.getServer().getWorlds())
+            commandSender.sendMessage(w.getKey().toString());
+
         commandSender.sendMessage("§6§lПроверки пройдены успешно!");
         commandSender.sendMessage("§6Ракета готова к запуску!");
 
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // Так, а вообще, пора бы и ракету запустить. Причём по-настоящему!
-
-        World targetPlanet = Main.plugin.getServer().getWorld(planet);
+        World targetPlanet = Utils.getWorldFromKey(planet);
         //TODO: подгрузка миров из конфига
         //TODO: проверка на существование планеты
         //TODO: подгрузка размера мира из конфига и прочей инфы о мире
@@ -119,6 +119,7 @@ public class LaunchRocket implements CommandExecutor {
             commandSender.sendMessage("§6Попытка No" + (i + 1));
             int rx = Utils.randomRangeRandom(-2000, 2000);
             int rz = Utils.randomRangeRandom(-2000, 2000);
+            Chunk chunk = targetPlanet.getChunkAt((int)(rx / 16), (int)(rz / 16), true);
             int ty = Utils.getHighestY(targetPlanet, rx, rz);
             if (ty > 280) {
                 commandSender.sendMessage("§cНе удалось разместить ракету: слишком высокая точка высадки");
@@ -147,6 +148,7 @@ public class LaunchRocket implements CommandExecutor {
             ArrayList<Block> trocket_blocks = new ArrayList<>();
 //            ArrayList<Chunk> chunks = new ArrayList<>();
 
+            commandSender.sendMessage("§6Нашли локацию, не перемещаемся из-за лагов. "+rx+" "+ty+" "+rz);
 
             for (int y = rocket.length-1; y >=0 ; y--) {
                 for (int x = 0; x < rocket[0].length; x++) {
@@ -196,57 +198,94 @@ public class LaunchRocket implements CommandExecutor {
             player.teleport(loc);
             player.playSound(loc, Sound.BLOCK_END_PORTAL_SPAWN, 1, 1);
             break;
-            //TODO: вынести проверку и перемещение ракеты в отдельные функции.
         }
 
 
         return true;
     }
 
-    private boolean validateRocketIntegrity(CommandSender commandSender, Player player, Block[][][] rocket, int rocket_top_height, int fuel_y, boolean failed, int rocket_walls_total_blocks_count, int rocket_walls_iron_blocks_count) {
-        int failed_blocks = 0;
+    private boolean validateRocketIntegrity(CommandSender commandSender, Block[][][] blocks, int down_y, int fuel_y) {
+        int xMax = blocks[0].length;
+        int yMax = blocks.length;
+        int zMax = blocks[0][0].length;
 
-        for (int y = 0; y < rocket.length - rocket_top_height; y++) {
-            for (int x = 0; x < rocket[0].length; x++) {
-                for (int z = 0; z < rocket[0][0].length; z++) {
-                    if (y != 0 && y != rocket.length - rocket_top_height - 1 &&
-                        x != 0 && x != rocket[0].length - 1 &&
-                        z != 0 && z != rocket[0][0].length - 1) continue;
-                    Block block = rocket[y][x][z];
-                    int rx = block.getX();
-                    int ry = block.getY();
-                    int rz = block.getZ();
-                    if (!isAir(block) && (block.getY() < fuel_y)) continue;
+        List<Block> invalidBlocks = new ArrayList<>();
 
-                    if (y != fuel_y && x != player.getLocation().getBlockX() && z != player.getLocation().getBlockZ()) {
-                        // Я НЕ ПОНИМАЮ ПОМОГИТЕ ААААА
-                        // "В стенах, потолке и полу ракеты должны быть подходящие блоки! (блоки корпуса, двери, стекло, освещение)"
-                        if (!failed) {
-                            commandSender.sendMessage("§4Ракета не герметична!");
-                            failed = true;
-                        }
-                        commandSender.sendMessage("Координаты неверного блока: " + rx+" "+ry+" "+rz);
-                        failed_blocks++;
-                        rocket_walls_total_blocks_count++;
-                    } else {
-                        rocket_walls_total_blocks_count++;
-                        if (block.getType() == Material.IRON_BLOCK)
-                            rocket_walls_iron_blocks_count++;
-                    }
+        int rocket_walls_iron_blocks_count = 0;
+        int rocket_walls_total_blocks_count = 0;
+
+        int fuel_local_y = fuel_y - down_y - 2;
+
+        for (int x = 0; x < xMax; x++) {
+            for (int z = 0; z < zMax; z++) {
+                rocket_walls_total_blocks_count++;
+                if (!validateWallBlock(blocks[yMax - 1][x][z])) {
+                    invalidBlocks.add(blocks[yMax - 1][x][z]);
                 }
+                if (blocks[yMax - 1][x][z].getType() == Material.IRON_BLOCK)
+                    rocket_walls_iron_blocks_count++;
             }
         }
-        if (failed_blocks > 0) commandSender.sendMessage("§4Неверных блоков: "+failed_blocks);
+
+        for (int x = 0; x < xMax; x++) {
+            for (int z = 0; z < zMax; z++) {
+                rocket_walls_total_blocks_count++;
+                if (!validateWallBlock(blocks[fuel_local_y][x][z])) {
+                    invalidBlocks.add(blocks[fuel_local_y][x][z]);
+                }
+                if (blocks[fuel_local_y][x][z].getType() == Material.IRON_BLOCK)
+                    rocket_walls_iron_blocks_count++;
+            }
+        }
+
+        for (int y = fuel_local_y; y < yMax - 1; y++) {
+            for (int x = 0; x < xMax; x++) {
+                rocket_walls_total_blocks_count++;
+                if (!validateWallBlock(blocks[y][x][0]))
+                    invalidBlocks.add(blocks[y][x][0]);
+                if (blocks[y][x][0].getType() == Material.IRON_BLOCK)
+                    rocket_walls_iron_blocks_count++;
+                rocket_walls_total_blocks_count++;
+                if (!validateWallBlock(blocks[y][x][zMax - 1]))
+                    invalidBlocks.add(blocks[y][x][zMax - 1]);
+                if (blocks[y][x][zMax - 1].getType() == Material.IRON_BLOCK)
+                    rocket_walls_iron_blocks_count++;
+            }
+        }
+
+        for (int y = fuel_local_y; y < yMax - 1; y++) {
+            for (int z = 0; z < zMax; z++) {
+                rocket_walls_total_blocks_count++;
+                if (!validateWallBlock(blocks[y][0][z]))
+                    invalidBlocks.add(blocks[y][0][z]);
+                if (blocks[y][0][z].getType() == Material.IRON_BLOCK)
+                    rocket_walls_iron_blocks_count++;
+                rocket_walls_total_blocks_count++;
+                if (!validateWallBlock(blocks[y][xMax - 1][z]))
+                    invalidBlocks.add(blocks[y][xMax - 1][z]);
+                if (blocks[y][xMax - 1][z].getType() == Material.IRON_BLOCK)
+                    rocket_walls_iron_blocks_count++;
+            }
+        }
+
+        boolean failed = false;
+
         if ((double) rocket_walls_iron_blocks_count / rocket_walls_total_blocks_count < 0.5) {
             commandSender.sendMessage("В стенах должно быть хотя бы 50% блоков железа!");
             failed = true;
         }
-
-        if(failed){
-            commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §4§lПровал");
-            return true;
+        if (!invalidBlocks.isEmpty()) {
+            commandSender.sendMessage("§4Ракета не герметична!");
+            commandSender.sendMessage("§6§lНеверные блоки:");
+            for (Block block : invalidBlocks) {
+                commandSender.sendMessage(" - " + block.getType().toString() + " на " + block.getX()+" "+block.getY()+" "+block.getZ());
+            }
+            failed = true;
         }
-        return false;
+        if(failed)
+            commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §4§lПровал");
+
+        return failed;
     }
 
     private boolean validateRocketStands(CommandSender commandSender, int down_y, int fuel_y, World world, int min_x, int min_z, int max_x, int max_z) {
@@ -276,7 +315,7 @@ public class LaunchRocket implements CommandExecutor {
         return rocket;
     }
 
-    private static int ValidateFuel(CommandSender commandSender, Player player, int down_y, World world) {
+    private static int validateRocketFuel(CommandSender commandSender, Player player, int down_y, World world) {
         Inventory fuel_container = null;
         int fuel_y = -100;
         for (int y = down_y; y < player.getLocation().getBlockY(); y++) {
