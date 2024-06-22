@@ -7,6 +7,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -38,7 +39,7 @@ public class LaunchRocket implements CommandExecutor {
 //            if (strings.length > 1)
 //            planet = strings[1];
 //            else {
-//                commandSender.sendMessage("§4§lПожалуйста, укажите планету!");
+//                commandSender.sendMessage("В§4В§lРџРѕР¶Р°Р»СѓР№СЃС‚Р°, СѓРєР°Р¶РёС‚Рµ РїР»Р°РЅРµС‚Сѓ!");
 //                return true;
 //            }
 //        }
@@ -46,18 +47,18 @@ public class LaunchRocket implements CommandExecutor {
         if (strings.length > 1) confirm = strings[1].equalsIgnoreCase("confirm");
 
         if (planet.isEmpty()) {
-            commandSender.sendMessage("§4§lПожалуйста, укажите планету!");
+            commandSender.sendMessage("В§4В§lРџРѕР¶Р°Р»СѓР№СЃС‚Р°, СѓРєР°Р¶РёС‚Рµ РїР»Р°РЅРµС‚Сѓ!");
             return true;
         }
         Player player = (Player) commandSender;
 
-        commandSender.sendMessage("§6§lЗапуск рассчёта целостности ракеты...");
+        commandSender.sendMessage("В§6В§lР—Р°РїСѓСЃРє СЂР°СЃСЃС‡С‘С‚Р° С†РµР»РѕСЃС‚РЅРѕСЃС‚Рё СЂР°РєРµС‚С‹...");
         player.playSound(player.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 5, 1);
         Inventory core_inv;
         World world = player.getWorld();
         Block core = world.getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ());
         if (core.getType() != Material.DISPENSER) {
-            commandSender.sendMessage("Встаньте РОВНО НА раздатчик в КАБИНЕ ракеты!");
+            commandSender.sendMessage("Р’СЃС‚Р°РЅСЊС‚Рµ Р РћР’РќРћ РќРђ СЂР°Р·РґР°С‚С‡РёРє РІ РљРђР‘РРќР• СЂР°РєРµС‚С‹!");
             return true;
         }
 
@@ -66,13 +67,13 @@ public class LaunchRocket implements CommandExecutor {
         } else return true;
 
         ItemStack rocket_core_itemstack = core_inv.getItem(4);
-        //TODO: сделать чекер ядра
+        //TODO: СЃРґРµР»Р°С‚СЊ С‡РµРєРµСЂ СЏРґСЂР°
         if (!true) {
-            commandSender.sendMessage("В центральном слоте раздатчика должно лежать ядро ракеты!");
+            commandSender.sendMessage("Р’ С†РµРЅС‚СЂР°Р»СЊРЅРѕРј СЃР»РѕС‚Рµ СЂР°Р·РґР°С‚С‡РёРєР° РґРѕР»Р¶РЅРѕ Р»РµР¶Р°С‚СЊ СЏРґСЂРѕ СЂР°РєРµС‚С‹!");
             return true;
         }
 
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта y");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§4В§lР—Р°РїСѓСЃРє СЂР°СЃСЃС‡С‘С‚Р° y");
         int top_y = -10000;
         int down_y = -10000;
         for (int i = player.getLocation().getBlockY(); i < 321; i++) {
@@ -88,20 +89,20 @@ public class LaunchRocket implements CommandExecutor {
             }
         }
         if (top_y <= -10000) {
-            commandSender.sendMessage("На макушке ракеты ровно над раздатчиком должен стоять магнетит!");
+            commandSender.sendMessage("РќР° РјР°РєСѓС€РєРµ СЂР°РєРµС‚С‹ СЂРѕРІРЅРѕ РЅР°Рґ СЂР°Р·РґР°С‚С‡РёРєРѕРј РґРѕР»Р¶РµРЅ СЃС‚РѕСЏС‚СЊ РјР°РіРЅРµС‚РёС‚!");
             return true;
         }
         if (down_y <= -10000) {
-            commandSender.sendMessage("Под ракетой ровно под раздатчиком должен стоять магнетит!");
+            commandSender.sendMessage("РџРѕРґ СЂР°РєРµС‚РѕР№ СЂРѕРІРЅРѕ РїРѕРґ СЂР°Р·РґР°С‚С‡РёРєРѕРј РґРѕР»Р¶РµРЅ СЃС‚РѕСЏС‚СЊ РјР°РіРЅРµС‚РёС‚!");
             return true;
         }
         if (top_y - down_y > 33) {
-            commandSender.sendMessage("Ракета должна быть не более 32 блоков высотой?!");
+            commandSender.sendMessage("Р Р°РєРµС‚Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РЅРµ Р±РѕР»РµРµ 32 Р±Р»РѕРєРѕРІ РІС‹СЃРѕС‚РѕР№?!");
             return true;
 
         }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт y закончен.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта x");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§2В§lР Р°СЃСЃС‡С‘С‚ y Р·Р°РєРѕРЅС‡РµРЅ.");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§4В§lР—Р°РїСѓСЃРє СЂР°СЃСЃС‡С‘С‚Р° x");
         int min_x = -2147483647;
         int max_x = -2147483647;
         for (int x = player.getLocation().getBlockX() + 5; x >= player.getLocation().getBlockX(); x--) {
@@ -117,11 +118,11 @@ public class LaunchRocket implements CommandExecutor {
             }
         }
         if (max_x == -2147483647 || min_x == -2147483647) {
-            commandSender.sendMessage("По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось x не подходит по этому требованию!");
+            commandSender.sendMessage("РџРѕ Р±РѕРєР°Рј СЂР°РєРµС‚С‹ РІ СЃС‚РµРЅР°С… РЅР° СѓСЂРѕРІРЅРµ СЂР°Р·РґР°С‚С‡РёРєР° РґРѕР»Р¶РЅС‹ СЃС‚РѕСЏС‚СЊ Р±Р»РѕРєРё РјР°РіРЅРµС‚РёС‚Р°! РћСЃСЊ x РЅРµ РїРѕРґС…РѕРґРёС‚ РїРѕ СЌС‚РѕРјСѓ С‚СЂРµР±РѕРІР°РЅРёСЋ!");
             return true;
         }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт x закончен.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта z");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§2В§lР Р°СЃСЃС‡С‘С‚ x Р·Р°РєРѕРЅС‡РµРЅ.");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§4В§lР—Р°РїСѓСЃРє СЂР°СЃСЃС‡С‘С‚Р° z");
         int min_z = -2147483647;
         int max_z = -2147483647;
 
@@ -138,11 +139,11 @@ public class LaunchRocket implements CommandExecutor {
             }
         }
         if (max_z == -2147483647 || min_z == -2147483647) {
-            commandSender.sendMessage("По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось z не подходит под эти требования!");
+            commandSender.sendMessage("РџРѕ Р±РѕРєР°Рј СЂР°РєРµС‚С‹ РІ СЃС‚РµРЅР°С… РЅР° СѓСЂРѕРІРЅРµ СЂР°Р·РґР°С‚С‡РёРєР° РґРѕР»Р¶РЅС‹ СЃС‚РѕСЏС‚СЊ Р±Р»РѕРєРё РјР°РіРЅРµС‚РёС‚Р°! РћСЃСЊ z РЅРµ РїРѕРґС…РѕРґРёС‚ РїРѕРґ СЌС‚Рё С‚СЂРµР±РѕРІР°РЅРёСЏ!");
             return true;
         }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт z закончен.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта топливного бака...");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§2В§lР Р°СЃСЃС‡С‘С‚ z Р·Р°РєРѕРЅС‡РµРЅ.");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§4В§lР—Р°РїСѓСЃРє СЂР°СЃСЃС‡С‘С‚Р° С‚РѕРїР»РёРІРЅРѕРіРѕ Р±Р°РєР°...");
         Inventory fuel_container = null;
         int fuel_y = -100;
         for (int y = down_y; y < player.getLocation().getBlockY(); y++) {
@@ -153,14 +154,14 @@ public class LaunchRocket implements CommandExecutor {
             }
         }
         if (fuel_container == null || fuel_y == -100) {
-            commandSender.sendMessage("Внизу ракеты должно стоять хранилище для топлива (В ПОЛУ)!");
+            commandSender.sendMessage("Р’РЅРёР·Сѓ СЂР°РєРµС‚С‹ РґРѕР»Р¶РЅРѕ СЃС‚РѕСЏС‚СЊ С…СЂР°РЅРёР»РёС‰Рµ РґР»СЏ С‚РѕРїР»РёРІР° (Р’ РџРћР›РЈ)!");
             return true;
         }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт топливного бака закончен.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск построения ракеты...");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§2В§lР Р°СЃСЃС‡С‘С‚ С‚РѕРїР»РёРІРЅРѕРіРѕ Р±Р°РєР° Р·Р°РєРѕРЅС‡РµРЅ.");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§4В§lР—Р°РїСѓСЃРє РїРѕСЃС‚СЂРѕРµРЅРёСЏ СЂР°РєРµС‚С‹...");
         Block[][][] rocket = new Block[top_y - down_y][max_x - min_x + 1][max_z - min_z + 1];
         ArrayList<Block> rocket_blocks = new ArrayList<>();
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§e§lИнициализация массивов завершена. Запуск сканера...");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§eВ§lРРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјР°СЃСЃРёРІРѕРІ Р·Р°РІРµСЂС€РµРЅР°. Р—Р°РїСѓСЃРє СЃРєР°РЅРµСЂР°...");
 
         for (int y = down_y + 1; y <= top_y; y++) {
             for (int x = min_x; x <= max_x; x++) {
@@ -171,23 +172,23 @@ public class LaunchRocket implements CommandExecutor {
             }
         }
 
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lПостроение ракеты закончено.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск проверки стоек ракеты...");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§2В§lРџРѕСЃС‚СЂРѕРµРЅРёРµ СЂР°РєРµС‚С‹ Р·Р°РєРѕРЅС‡РµРЅРѕ.");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§4В§lР—Р°РїСѓСЃРє РїСЂРѕРІРµСЂРєРё СЃС‚РѕРµРє СЂР°РєРµС‚С‹...");
         for (int y = down_y + 1; y < fuel_y; y++) {
             if (!(validateWallBlock(world.getBlockAt(min_x, y, min_z)) && validateWallBlock(world.getBlockAt(max_x, y, min_z)) &&
                     validateWallBlock(world.getBlockAt(min_x, y, max_z)) && validateWallBlock(world.getBlockAt(max_x, y, max_z)))
             ) {
 
-                commandSender.sendMessage("По углам ракеты до слоя с топливными блоками должны быть ножки из блоков корупса");
+                commandSender.sendMessage("РџРѕ СѓРіР»Р°Рј СЂР°РєРµС‚С‹ РґРѕ СЃР»РѕСЏ СЃ С‚РѕРїР»РёРІРЅС‹РјРё Р±Р»РѕРєР°РјРё РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РЅРѕР¶РєРё РёР· Р±Р»РѕРєРѕРІ РєРѕСЂСѓРїСЃР°");
                 return true;
             }
         }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lПроверка стоек ракеты закончена.");
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§4§lЗапуск рассчёта корпуса...");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§2В§lРџСЂРѕРІРµСЂРєР° СЃС‚РѕРµРє СЂР°РєРµС‚С‹ Р·Р°РєРѕРЅС‡РµРЅР°.");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§4В§lР—Р°РїСѓСЃРє СЂР°СЃСЃС‡С‘С‚Р° РєРѕСЂРїСѓСЃР°...");
 
-        //TODO: валидация корпуса
+
         int rocket_top_height = (int) (double) ((max_x - min_x - 1) / 2);
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§e§lВысота конуса ракеты - " + rocket_top_height);
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§eВ§lР’С‹СЃРѕС‚Р° РєРѕРЅСѓСЃР° СЂР°РєРµС‚С‹ - " + rocket_top_height);
         int rocket_walls_iron_blocks_count = 0;
         int rocket_walls_quartz_blocks_count = 0;
 //        int rocket_walls_copper_blocks_count = 0;
@@ -208,8 +209,8 @@ public class LaunchRocket implements CommandExecutor {
                             if (y != fuel_y & x != player.getLocation().getBlockX() & z != player.getLocation().getBlockZ()) {
 
 
-                                commandSender.sendMessage("В стенах, потолке и полу ракеты должны быть подходящие блоки! (блоки корпуса, двери, стекло, освещение)");
-                                commandSender.sendMessage("Координаты неверного блока: " + rocket[y][x][z].getX() + " " + rocket[y][x][z].getY() + " " + rocket[y][x][z].getZ());
+                                commandSender.sendMessage("Р’ СЃС‚РµРЅР°С…, РїРѕС‚РѕР»РєРµ Рё РїРѕР»Сѓ СЂР°РєРµС‚С‹ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РїРѕРґС…РѕРґСЏС‰РёРµ Р±Р»РѕРєРё! (Р±Р»РѕРєРё РєРѕСЂРїСѓСЃР°, РґРІРµСЂРё, СЃС‚РµРєР»Рѕ, РѕСЃРІРµС‰РµРЅРёРµ)");
+                                commandSender.sendMessage("РљРѕРѕСЂРґРёРЅР°С‚С‹ РЅРµРІРµСЂРЅРѕРіРѕ Р±Р»РѕРєР°: " + rocket[y][x][z].getX() + " " + rocket[y][x][z].getY() + " " + rocket[y][x][z].getZ());
                                 return true;
                             } else {
                                 rocket_walls_total_blocks_count++;
@@ -246,49 +247,51 @@ public class LaunchRocket implements CommandExecutor {
             }
         }
         if ((double) rocket_walls_iron_blocks_count / rocket_walls_total_blocks_count < 0.5) {
-            commandSender.sendMessage("В стенах должно быть хотя бы 50% блоков железа!");
+            commandSender.sendMessage("Р’ СЃС‚РµРЅР°С… РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ С…РѕС‚СЏ Р±С‹ 50% Р±Р»РѕРєРѕРІ Р¶РµР»РµР·Р°!");
             return true;
         }
-        //if (ProjectClosedSpace.debug) commandSender.sendMessage("§2§lРассчёт корпуса ракеты закончен!");
+        //if (ProjectClosedSpace.debug) commandSender.sendMessage("В§2В§lР Р°СЃСЃС‡С‘С‚ РєРѕСЂРїСѓСЃР° СЂР°РєРµС‚С‹ Р·Р°РєРѕРЅС‡РµРЅ!");
 
 
         player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 5, 1);
         if (!confirm) {
-            commandSender.sendMessage("§aРакета собрана успешно! Для запуска пропишите эту же команду, но добавьте в аргументах (через пробел) §6confirm");
-            commandSender.sendMessage("§eРакета будет высажена в случайном месте на планете, в случае, если такого места не будет найдено, вы останетесь на этой планете.\n" +
-                    "Для высадки в конкретном месте, возьмите в руку посадочный лист!");
+            commandSender.sendMessage("В§aР Р°РєРµС‚Р° СЃРѕР±СЂР°РЅР° СѓСЃРїРµС€РЅРѕ! Р”Р»СЏ Р·Р°РїСѓСЃРєР° РїСЂРѕРїРёС€РёС‚Рµ СЌС‚Сѓ Р¶Рµ РєРѕРјР°РЅРґСѓ, РЅРѕ РґРѕР±Р°РІСЊС‚Рµ РІ Р°СЂРіСѓРјРµРЅС‚Р°С… (С‡РµСЂРµР· РїСЂРѕР±РµР») В§6confirm");
+            commandSender.sendMessage("В§eР Р°РєРµС‚Р° Р±СѓРґРµС‚ РІС‹СЃР°Р¶РµРЅР° РІ СЃР»СѓС‡Р°Р№РЅРѕРј РјРµСЃС‚Рµ РЅР° РїР»Р°РЅРµС‚Рµ, РІ СЃР»СѓС‡Р°Рµ, РµСЃР»Рё С‚Р°РєРѕРіРѕ РјРµСЃС‚Р° РЅРµ Р±СѓРґРµС‚ РЅР°Р№РґРµРЅРѕ, РІС‹ РѕСЃС‚Р°РЅРµС‚РµСЃСЊ РЅР° СЌС‚РѕР№ РїР»Р°РЅРµС‚Рµ.\n" +
+                    "Р”Р»СЏ РІС‹СЃР°РґРєРё РІ РєРѕРЅРєСЂРµС‚РЅРѕРј РјРµСЃС‚Рµ, РІРѕР·СЊРјРёС‚Рµ РІ СЂСѓРєСѓ РїРѕСЃР°РґРѕС‡РЅС‹Р№ Р»РёСЃС‚!");
             return true;
         } else
-            commandSender.sendMessage("§aРакета собрана успешно!");
-        commandSender.sendMessage("§4§lЗАПУСК РАКЕТЫ!!! ПЛАНЕТА: " + planet);
+            commandSender.sendMessage("В§aР Р°РєРµС‚Р° СЃРѕР±СЂР°РЅР° СѓСЃРїРµС€РЅРѕ!");
+        commandSender.sendMessage("В§4В§lР—РђРџРЈРЎРљ Р РђРљР•РўР«!!! РџР›РђРќР•РўРђ: " + planet);
 
         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //Это ИИ придумал написать ^
-        // Так, а вообще, пора бы и ракету запустить. Причём по-настоящему!
+        //Р­С‚Рѕ РР РїСЂРёРґСѓРјР°Р» РЅР°РїРёСЃР°С‚СЊ ^
+        // РўР°Рє, Р° РІРѕРѕР±С‰Рµ, РїРѕСЂР° Р±С‹ Рё СЂР°РєРµС‚Сѓ Р·Р°РїСѓСЃС‚РёС‚СЊ. РџСЂРёС‡С‘Рј РїРѕ-РЅР°СЃС‚РѕСЏС‰РµРјСѓ!
 
         World targetPlanet = Main.plugin.getServer().getWorld(planet);
-        //TODO: подгрузка миров из конфига
-        //TODO: проверка на существование планеты
-        //TODO: подгрузка размера мира из конфига и прочей инфы о мире
+        //TODO: РїРѕРґРіСЂСѓР·РєР° РјРёСЂРѕРІ РёР· РєРѕРЅС„РёРіР°
+        //TODO: РїСЂРѕРІРµСЂРєР° РЅР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РїР»Р°РЅРµС‚С‹
+        //TODO: РїРѕРґРіСЂСѓР·РєР° СЂР°Р·РјРµСЂР° РјРёСЂР° РёР· РєРѕРЅС„РёРіР° Рё РїСЂРѕС‡РµР№ РёРЅС„С‹ Рѕ РјРёСЂРµ
         if (targetPlanet == null) {
-            commandSender.sendMessage("§cПланета " + planet + " не существует!");
+            commandSender.sendMessage("В§cРџР»Р°РЅРµС‚Р° " + planet + " РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚!");
         }
         int rshiftx = core.getX() - min_x;
 
         int rshiftz = core.getZ() - min_z;
 
-        for (int i = 0; i < 50; i++) { //TODO: конфиг количества попыток
-            //TODO: проверка на нерушимые блоки
-            commandSender.sendMessage("§6Попытка No" + (i + 1));
+        for (int i = 0; i < 50; i++) { //TODO: РєРѕРЅС„РёРі РєРѕР»РёС‡РµСЃС‚РІР° РїРѕРїС‹С‚РѕРє
+            //TODO: РїСЂРѕРІРµСЂРєР° РЅР° РЅРµСЂСѓС€РёРјС‹Рµ Р±Р»РѕРєРё
+            //TODO: РїРµСЂРµРЅРѕСЃ РјР°РіРЅРµС‚РёС‚Р°
+            //TODO: СЃС‚РѕРёРјРѕСЃС‚СЊ РїРѕР»С‘С‚Р°
+            commandSender.sendMessage("В§6РџРѕРїС‹С‚РєР° No" + (i + 1));
             int rx = Utils.randomRangeRandom(-2000, 2000);
             int rz = Utils.randomRangeRandom(-2000, 2000);
             int ty = Utils.getHighestY(targetPlanet, rx, rz);
             if (ty > 280) {
-                commandSender.sendMessage("§cНе удалось разместить ракету: слишком высокая точка высадки");
+                commandSender.sendMessage("В§cРќРµ СѓРґР°Р»РѕСЃСЊ СЂР°Р·РјРµСЃС‚РёС‚СЊ СЂР°РєРµС‚Сѓ: СЃР»РёС€РєРѕРј РІС‹СЃРѕРєР°СЏ С‚РѕС‡РєР° РІС‹СЃР°РґРєРё");
                 continue;
             }
             Location loc = new Location(targetPlanet, rx, ty, rz);
-            //Проверка области над стойками
+            //РџСЂРѕРІРµСЂРєР° РѕР±Р»Р°СЃС‚Рё РЅР°Рґ СЃС‚РѕР№РєР°РјРё
             boolean isCheckFailed = false;
 
             for (int x = loc.getBlockX() - rshiftx; x < loc.getBlockX() + (rocket[0].length - rshiftx); x++) {
@@ -297,7 +300,7 @@ public class LaunchRocket implements CommandExecutor {
                         if (!isAir(world.getBlockAt(x, y, z))) {
                             isCheckFailed = true;
                             commandSender.sendMessage(world.getBlockAt(x, y, z).getType().toString() + " X: " + x + " Y: " + y + " Z: " + z);
-                            commandSender.sendMessage("§cНе удалось разместить ракету");
+                            commandSender.sendMessage("В§cРќРµ СѓРґР°Р»РѕСЃСЊ СЂР°Р·РјРµСЃС‚РёС‚СЊ СЂР°РєРµС‚Сѓ");
                             break;
                         }
                     }
@@ -320,21 +323,23 @@ public class LaunchRocket implements CommandExecutor {
 //                            chunks.add(loc.getChunk());
 //                        }
 
-                        Block tblock = targetPlanet.getBlockAt(loc.getBlockX() + (x - rshiftx), loc.getBlockY() + ( y), loc.getBlockZ() + (z - rshiftz));
+                        Block tblock = targetPlanet.getBlockAt(loc.getBlockX() + (x - rshiftx), loc.getBlockY() + ( y+1), loc.getBlockZ() + (z - rshiftz));
                         commandSender.sendMessage("WORLD: " + targetPlanet.getName() + " TYPE: " + tblock.getType().toString() + " X: " + tblock.getX() + " Y: " + tblock.getY() + " Z: " + tblock.getZ());
 
                         tblock.breakNaturally();
 
-                        Material mat = tblock.getType();
-                        byte data = tblock.getData();
-                        BlockState state = tblock.getState().copy();
+                        Material mat = rocket[y][x][z].getType();
+                        BlockData data = rocket[y][x][z].getBlockData();
+//                        BlockState state = tblock.getState().copy();
 
-                        tblock.setType(rocket[y][x][z].getType());
+                        tblock.setType(rocket[y][x][z].getType(), false);
+                        tblock.setBlockData(data);
+
 //                        tblock.setType(Material.COAL_ORE);
 //                        tblock.setBlockData(rocket[y][x][z].getBlockData());
                         trocket[y][x][z] = tblock;
                         trocket_blocks.add(tblock);
-//                        rocket[y][x][z].setType(Material.AIR);
+                        rocket[y][x][z].setType(Material.AIR, false);
                         commandSender.sendMessage("x: " + tblock.getX() + " y: " + tblock.getY() + " z: " + tblock.getZ());
                     }
                 }
@@ -350,10 +355,11 @@ public class LaunchRocket implements CommandExecutor {
 //                    }
 //                }
 //            }
-            //TODO: нормальное перемещение сущностей
+            //TODO: РЅРѕСЂРјР°Р»СЊРЅРѕРµ РїРµСЂРµРјРµС‰РµРЅРёРµ СЃСѓС‰РЅРѕСЃС‚РµР№
             player.teleport(loc);
             player.playSound(loc, Sound.BLOCK_END_PORTAL_SPAWN, 1, 1);
             break;
+            //TODO: РІС‹РЅРµСЃС‚Рё РїСЂРѕРІРµСЂРєСѓ Рё РїРµСЂРµРјРµС‰РµРЅРёРµ СЂР°РєРµС‚С‹ РІ РѕС‚РґРµР»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё.
         }
 
 
