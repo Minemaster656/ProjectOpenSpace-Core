@@ -6,9 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.Chunk;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,6 +17,8 @@ import util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.Math.abs;
 
 public class LaunchRocket implements CommandExecutor {
     @Override
@@ -31,6 +31,18 @@ public class LaunchRocket implements CommandExecutor {
             return true;
         }
 
+        String planet = strings[0];
+        World targetPlanet = Utils.getPlanet(planet);
+        //TODO: подгрузка миров из конфига
+        //TODO: проверка на существование планеты
+        if (targetPlanet == null) {
+            commandSender.sendMessage("§cПланета " + planet + " не существует!");
+            commandSender.sendMessage("§6Доступные планеты:");
+            for (World w : Main.plugin.getServer().getWorlds())
+                commandSender.sendMessage(" - "+w.getKey().toString());
+            return true;
+        }
+
         World world = player.getWorld();
         Block core = world.getBlockAt(player.getLocation().getBlockX(), player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ());
         if (core.getType() != Material.DISPENSER) {
@@ -38,7 +50,6 @@ public class LaunchRocket implements CommandExecutor {
             return true;
         }
 
-        String planet = strings[0];
         boolean confirming = strings.length > 1 && strings[1].equalsIgnoreCase("confirm");
 
         commandSender.sendMessage("§6§lCборка ракеты...");
@@ -73,16 +84,16 @@ public class LaunchRocket implements CommandExecutor {
 
         int fuel_y = validateRocketFuel(commandSender, player, down_y, world);
         if (fuel_y == -100) return true;
-        commandSender.sendMessage("[ТОПЛИВО] §6§lОК");
+
 
         Block[][][] rocket = getRocketBlocks(top_y, down_y, max_x, min_x, max_z, min_z, world);
 
         if (validateRocketStands(commandSender, down_y, fuel_y, world, min_x, min_z, max_x, max_z)) return true;
-        commandSender.sendMessage("[СТОЙКИ] §6§lОК");
+
 
         if (validateRocketIntegrity(commandSender, rocket, down_y, fuel_y))
             return true;
-        commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §6§lОК");
+
 
         player.playSound(player.getLocation(), Sound.BLOCK_BEACON_DEACTIVATE, 5, 1);
         if (!confirming) {
@@ -94,20 +105,57 @@ public class LaunchRocket implements CommandExecutor {
             return true;
         }
 
-        for (World w : Main.plugin.getServer().getWorlds())
-            commandSender.sendMessage(w.getKey().toString());
-
         commandSender.sendMessage("§6§lПроверки пройдены успешно!");
         commandSender.sendMessage("§6Ракета готова к запуску!");
 
-        World targetPlanet = Utils.getPlanet(planet);
-        //TODO: подгрузка миров из конфига
-        //TODO: проверка на существование планеты
-        //TODO: подгрузка размера мира из конфига и прочей инфы о мире
-        if (targetPlanet == null) {
-            commandSender.sendMessage("§cПланета " + planet + " не существует!");
+        int rocket_x = core.getY(), rocket_z = core.getZ();
+        int size = min_x - max_x;
+
+        int rx = -1;
+        int rz = -1;
+        int ry = -1;
+        boolean found = false;
+        random_location_find: for (int i = 0; i < 10; i++) {
+            int shift_x = Utils.randomRangeRandom(-2000, 2000),
+                shift_z = Utils.randomRangeRandom(-2000, 2000);
+            rx = rocket_x + shift_x;
+            rz = rocket_z + shift_z;
+            int highest_y = targetPlanet.getHighestBlockAt(rx, rz).getY();
+            if (highest_y > 280) continue;
+            for(int x = -size >> 1; x < size >> 1; x++) {
+                for(int z = -size >> 1; z < size >> 1; z++) {
+                    int highest_y_here = targetPlanet.getHighestBlockAt(rx+x, rz+z).getY();
+                    if (abs(highest_y_here - highest_y) > 2) continue random_location_find;
+                }
+            }
+            found = true;
+            ry = highest_y;
+            break;
+        }
+        if (!found) {
+            commandSender.sendMessage("§6§lЛокация для безопасной высадки не найдена... попробуйте ещё раз?");
             return true;
         }
+        commandSender.sendMessage("§6§lНашли локацию для высадки! "+rx+" "+ry+" "+rz);
+        rx -= size >> 1;
+        rz -= size >> 1;
+
+        for(int x = rx; x < rx+size; x++) {
+            int local_x = x - rx;
+            for(int z = rz; z < rz+size; z++) {
+                int local_z = z - rz;
+                for(int y = ry; y < ry + rocket.length; y++) {
+                    int local_y = y - ry;
+                    Location curloc = new Location(world, x, y, z);
+                    Location newloc = new Location(targetPlanet, x, y, z);
+                    Block block = rocket[local_y][local_x][local_z];
+                    newloc.getBlock().setType(block.getType());
+                    curloc.getBlock().setType(Material.AIR);
+                }
+            }
+        }
+        int local_cx = rx - core.getX(), local_cy = ry - core.getY(), local_cz = rz - core.getZ();
+        player.teleport(new Location(targetPlanet, rx+local_cx, ry+local_cy, rz+local_cz));
 
 // ЭТО ВСЕ НАДО ПЕРЕПИСАТЬ!
 // Жрет много ресурсов, вынести в отдельный поток?...
@@ -122,7 +170,7 @@ public class LaunchRocket implements CommandExecutor {
             commandSender.sendMessage("§6Попытка No" + (i + 1));
             int rx = Utils.randomRangeRandom(-2000, 2000);
             int rz = Utils.randomRangeRandom(-2000, 2000);
-            Chunk chunk = targetPlanet.getChunkAt((int)(rx / 16), (int)(rz / 16), true);
+
             int ty = Utils.getHighestY(targetPlanet, rx, rz);
             if (ty > 280) {
                 commandSender.sendMessage("§cНе удалось разместить ракету: слишком высокая точка высадки");
@@ -287,6 +335,8 @@ public class LaunchRocket implements CommandExecutor {
         }
         if(failed)
             commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §4§lПровал");
+        else
+            commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §6§lОК");
 
         return failed;
     }
@@ -303,6 +353,7 @@ public class LaunchRocket implements CommandExecutor {
                 return true;
             }
         }
+        commandSender.sendMessage("[СТОЙКИ] §6§lОК");
         return false;
     }
 
@@ -333,6 +384,7 @@ public class LaunchRocket implements CommandExecutor {
             commandSender.sendMessage("§4В полу ракеты должно стоять хранилище для топлива!");
             return -100;
         }
+        commandSender.sendMessage("[ТОПЛИВО] §6§lОК");
         return fuel_y;
     }
 
@@ -346,8 +398,8 @@ public class LaunchRocket implements CommandExecutor {
         validWallBlocks.add(Material.LODESTONE);
         validWallBlocks.add(Material.GLASS);
         validWallBlocks.add(Material.TINTED_GLASS);
-        for (int i = 0; i < validWallBlocks.size(); i++) {
-            if (validWallBlocks.get(i) == block.getType()) {
+        for (Material validWallBlock : validWallBlocks) {
+            if (validWallBlock == block.getType()) {
                 return true;
             }
         }
@@ -433,9 +485,4 @@ public class LaunchRocket implements CommandExecutor {
         if (failed) return new int[]{-1};
         return new int[]{top_y, down_y, max_x, min_x, max_z, min_z};
     }
-
-    public boolean isAir(Block block) {
-        return block.getType() == Material.AIR || block.getType() == Material.CAVE_AIR || block.getType() == Material.VOID_AIR;
-    }
-
 }

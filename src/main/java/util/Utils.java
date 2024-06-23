@@ -1,27 +1,16 @@
 package util;
 
-import com.gdt.openspacecore.Main;
-
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
-    public static int getHighestY(World world, int x, int z) {
-        for (int i = 320; i >= -64; i--) {
-            if(!isAir(new Location(world, x, i, z).getBlock()))
-                return i;
-        }
-        return -64;
-    }
-
     public static int randomRangeRandom(int start, int end) {
-        Random random = new Random();
+        ThreadLocalRandom random = ThreadLocalRandom.current();
         return random.nextInt((end - start) + 1) + start;
     }
 
