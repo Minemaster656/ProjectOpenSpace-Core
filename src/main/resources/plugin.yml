@@ -1,10 +1,10 @@
 name: ProjectOpenSpace-Core
 version: '${version}'
-main: com.gdt.openspacecore.Main
+main: openspacecore.Main
 api-version: '1.20'
 commands:
   launchrocket:
-    description: Запускает ракету
+    description: Launches the rocket
     aliases:
       - lrocket
       - rocket

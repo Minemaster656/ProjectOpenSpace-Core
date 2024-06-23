@@ -1,4 +1,4 @@
-package com.gdt.openspacecore;
+package openspacecore;
 
 import org.bukkit.HeightMap;
 import org.bukkit.World;
@@ -9,7 +9,7 @@ import org.bukkit.generator.WorldInfo;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import command.LaunchRocket;
+import openspacecore.command.LaunchRocket;
 
 import java.util.Objects;
 import java.util.Random;

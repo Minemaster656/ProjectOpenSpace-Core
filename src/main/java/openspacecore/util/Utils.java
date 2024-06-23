@@ -1,4 +1,4 @@
-package util;
+package openspacecore.util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
