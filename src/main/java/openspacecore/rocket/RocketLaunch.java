@@ -1,5 +1,6 @@
 package openspacecore.rocket;
 
+import openspacecore.Main;
 import openspacecore.util.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -10,6 +11,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RocketLaunch {
     public static void launch(World current, World target, int rx, int rz, int ry, int size, Block[][][] rocket, Block core) {
         rx -= size >> 1;
@@ -18,6 +22,9 @@ public class RocketLaunch {
         // first iteration: set all blocks that don't need supporting blocks
         // second iteration: set all other blocks
         // third iteration: remove old rocket
+
+        List teleported = new ArrayList<>();
+
         for (int iter = 0; iter < 3; iter++) {
             for(int x = rx; x < rx+size; x++) {
                 int local_x = x - rx;
@@ -41,6 +48,15 @@ public class RocketLaunch {
                                 newblock.setType(block.getType(), false);
                                 newblock.setBlockData(block.getBlockData());
                             }
+                            for (Entity ent : current.getNearbyEntities(BoundingBox.of(block))) {
+                                if (teleported.contains(ent)) continue;
+                                Location new_pos = newblock.getLocation();
+                                new_pos.add(block.getX() % 1, block.getY() % 1, block.getZ() % 1);
+                                new_pos.setPitch(ent.getLocation().getPitch());
+                                new_pos.setYaw(ent.getLocation().getYaw());
+                                ent.teleport(new_pos);
+                                teleported.add(ent);
+                            }
                         } else {
                             Block block = rocket[local_y][local_x][local_z];
                             Location current_loc = new Location(current, block.getX(), block.getY(), block.getZ());
@@ -51,14 +67,10 @@ public class RocketLaunch {
                 }
             }
         }
-        for (Entity ent : current.getNearbyEntities(BoundingBox.of(rocket[0][0][0], rocket[rocket.length-1][rocket[0].length-1][rocket[0][0].length-1]))) {
-            Location origin = rocket[0][0][0].getLocation();
-            Location offset = new Location(target, rx, ry, rz).subtract(ent.getLocation());
-            Location real = new Location(target, rx + offset.getX(), ry + offset.getY(), rz + offset.getZ());
-            ent.teleport(real);
-        }
+        // for (Entity enr : current.getNearbyEntites())
         target.getBlockAt(rx + size << 1, ry - 1, rz + size << 1).setType(Material.LODESTONE, false);
         current.getBlockAt(rx + size << 1, ry - 1, rz + size << 1).setType(Material.AIR, false);
         current.createExplosion(rx + size << 1, ry - 1, rz + size << 1, 4f);
     }
 }
+
