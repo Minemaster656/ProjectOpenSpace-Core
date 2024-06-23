@@ -1,16 +1,8 @@
 package openspacecore.rocket;
 
-import openspacecore.Main;
-import openspacecore.rocket.RocketUtils;
-import openspacecore.util.Utils;
-
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -87,21 +79,21 @@ public class RocketValidation {
         boolean failed = false;
 
         if ((double) rocket_walls_iron_blocks_count / rocket_walls_total_blocks_count < 0.5) {
-            commandSender.sendMessage("В стенах должно быть хотя бы 50% блоков железа!");
+            commandSender.sendMessage("[RCPU] §4A-ERR§r: Rocket hull should have at least 50% of iron blocks!");
             failed = true;
         }
         if (!invalidBlocks.isEmpty()) {
-            commandSender.sendMessage("§4Ракета не герметична!");
-            commandSender.sendMessage("§6§lНеверные блоки:");
+            commandSender.sendMessage("[RCPU] §4A-ERR§r: Rocket is not sealed!");
+            commandSender.sendMessage("[RCPU] Invalid blocks found at:");
             for (Block block : invalidBlocks) {
-                commandSender.sendMessage(" - " + block.getType().toString() + " на " + block.getX()+" "+block.getY()+" "+block.getZ());
+                commandSender.sendMessage(" - " + block.getType() + " at " + block.getX()+" "+block.getY()+" "+block.getZ());
             }
             failed = true;
         }
         if(failed)
-            commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §4§lПровал");
+            commandSender.sendMessage("[RCPU] [§7INTEGRITY§r] §4§lFAIL");
         else
-            commandSender.sendMessage("[ГЕРМЕТИЧНОСТЬ] §6§lОК");
+            commandSender.sendMessage("[RCPU] [§7INTEGRITY§r] §a§lОК");
 
         return failed;
     }
@@ -113,12 +105,12 @@ public class RocketValidation {
                     validateWallBlock(world.getBlockAt(min_x, y, max_z)) &&
                     validateWallBlock(world.getBlockAt(max_x, y, max_z)))
             ) {
-                commandSender.sendMessage("[СТОЙКИ] §4§lПровал");
-                commandSender.sendMessage("§4По углам ракеты до слоя с хранилищем топлива должны быть стойки ракеты из блоков корпуса");
+                commandSender.sendMessage("[RCPU] §4A-ERR§r: Rocket does not have any stands from lodestone to fuel level");
+                commandSender.sendMessage("[RCPU] [§7STANDS§r] §4§lFAIL");
                 return true;
             }
         }
-        commandSender.sendMessage("[СТОЙКИ] §6§lОК");
+        commandSender.sendMessage("[RCPU] [§7STANDS§r] §a§lOK");
         return false;
     }
 
@@ -133,11 +125,11 @@ public class RocketValidation {
             }
         }
         if (fuel_container == null || fuel_y == -100) {
-            commandSender.sendMessage("[ТОПЛИВО] §4§lПровал");
-            commandSender.sendMessage("§4В полу ракеты должно стоять хранилище для топлива!");
+            commandSender.sendMessage("[RCPU] §4A-ERR§r: Rocket should have fuel storage between top and bottom lodestones");
+            commandSender.sendMessage("[RCPU] [§7FUEL§r] §4§lFAIL");
             return -100;
         }
-        commandSender.sendMessage("[ТОПЛИВО] §6§lОК");
+        commandSender.sendMessage("[RCPU] [§7FUEL§r] §a§lOK");
         return fuel_y;
     }
 
@@ -151,6 +143,14 @@ public class RocketValidation {
         validWallBlocks.add(Material.LODESTONE);
         validWallBlocks.add(Material.GLASS);
         validWallBlocks.add(Material.TINTED_GLASS);
+
+        validWallBlocks.add(Material.SPRUCE_DOOR);
+        validWallBlocks.add(Material.WARPED_DOOR);
+        validWallBlocks.add(Material.CRIMSON_DOOR);
+        validWallBlocks.add(Material.BIRCH_DOOR);
+        validWallBlocks.add(Material.DARK_OAK_DOOR);
+        validWallBlocks.add(Material.MANGROVE_DOOR);
+
         for (Material validWallBlock : validWallBlocks) {
             if (validWallBlock == block.getType()) {
                 return true;
@@ -206,33 +206,36 @@ public class RocketValidation {
             }
         }
 
-        if (top_y <= -2147483647) {
-            commandSender.sendMessage("§4На макушке ракеты (ровно над раздатчиком) должен стоять магнетит!");
+        if (top_y == -2147483647) {
+            commandSender.sendMessage("[RCPU] Rocket should have lodestone at the top of it right above dispencer.");
             failed = true;
         }
-        if (down_y <= -2147483647) {
-            commandSender.sendMessage("§4Под ракетой (ровно под раздатчиком) должен стоять магнетит!");
+        if (down_y == -2147483647) {
+            commandSender.sendMessage("[RCPU] Rocket should have lodestone at the bottom of it right below the dispencer.");
             failed = true;
         }
-        if (top_y - down_y > 33) {
-            commandSender.sendMessage("§4Ракета должна быть не более 32 блоков высотой!");
+        if (down_y > -2147483647 && top_y > -2147483647 && top_y - down_y > 33) {
+            commandSender.sendMessage("[RCPU] Rocket should not be more than 32 blocks tall!");
             failed = true;
         }
-
         if (max_x == -2147483647 || min_x == -2147483647) {
-            commandSender.sendMessage("§4По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось x не подходит по этому требованию!");
+            commandSender.sendMessage("[RCPU] Rocket should have lodestone in it's walls by X axis right on Y-level with dispencer.");
             failed = true;
         }
         if (max_z == -2147483647 || min_z == -2147483647) {
-            commandSender.sendMessage("§4По бокам ракеты в стенах на уровне раздатчика должны стоять блоки магнетита! Ось z не подходит под эти требования!");
+            commandSender.sendMessage("[RCPU] Rocket should have lodestone in it's walls by Z axis right on Y-level with dispencer.");
             failed = true;
         }
         if (player.getLocation().getBlockX()-min_x != max_x - player.getLocation().getBlockX() || player.getLocation().getBlockZ()-min_z != max_z - player.getLocation().getBlockZ()) {
-            commandSender.sendMessage("§4Ядро ракеты должно быть ровно по середине");
+            commandSender.sendMessage("[RCPU] Rocket core (dispencer) should be in it's center");
             failed = true;
         }
         if (max_x-min_x != max_z-min_z) {
-            commandSender.sendMessage("§4Стороны ракеты по X и Z должны быть равны в длине.");
+            commandSender.sendMessage("[RCPU] Rocket should have equal lengths on X and Z axes");
+            failed = true;
+        }
+        if (max_x > -2147483647 && min_x > -2147483647 && Math.max(max_x - min_x, max_z - min_z) > 16) {
+            commandSender.sendMessage("[RCPU] Rocket should not be more than 16 blocks wide!");
             failed = true;
         }
         if (failed) return new int[]{-1};

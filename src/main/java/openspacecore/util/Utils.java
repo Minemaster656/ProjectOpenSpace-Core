@@ -24,7 +24,7 @@ public class Utils {
         NamespacedKey kkey = NamespacedKey.fromString(key);
         for (World w : Bukkit.getWorlds()) {
             if (w.getKey().equals(kkey)) return w;
-        };
+        }
         return null;
     }
 }

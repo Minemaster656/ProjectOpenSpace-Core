@@ -33,7 +33,7 @@ public final class Main extends JavaPlugin {
         new WorldCreator("space")
             .type(WorldType.FLAT)
             .generator(new SpaceGenerator())
-            .environment(World.Environment.CUSTOM)
+            .environment(World.Environment.NETHER)
             .generateStructures(false)
             .createWorld();
     }
