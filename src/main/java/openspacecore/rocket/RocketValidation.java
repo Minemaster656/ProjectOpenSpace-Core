@@ -152,6 +152,10 @@ public class RocketValidation {
         validWallBlocks.add(Material.DARK_OAK_DOOR);
         validWallBlocks.add(Material.MANGROVE_DOOR);
 
+        validWallBlocks.add(Material.SPRUCE_TRAPDOOR);
+        validWallBlocks.add(Material.BIRCH_TRAPDOOR);
+        validWallBlocks.add(Material.DARK_OAK_TRAPDOOR);
+
         for (Material validWallBlock : validWallBlocks) {
             if (validWallBlock == block.getType()) {
                 return true;
