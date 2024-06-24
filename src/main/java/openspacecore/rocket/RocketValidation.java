@@ -86,11 +86,11 @@ public class RocketValidation {
             commandSender.sendMessage("[RCPU] §4A-ERR§r: Rocket is not sealed!");
             commandSender.sendMessage("[RCPU] Invalid blocks found at:");
             for (Block block : invalidBlocks) {
-                commandSender.sendMessage(" - " + block.getType() + " at " + block.getX()+" "+block.getY()+" "+block.getZ());
+                commandSender.sendMessage(" - " + block.getType() + " at " + block.getX() + " " + block.getY() + " " + block.getZ());
             }
             failed = true;
         }
-        if(failed)
+        if (failed)
             commandSender.sendMessage("[RCPU] [§7INTEGRITY§r] §4§lFAIL");
         else
             commandSender.sendMessage("[RCPU] [§7INTEGRITY§r] §a§lОК");
@@ -162,12 +162,12 @@ public class RocketValidation {
     public static int[] validateRocketSize(CommandSender commandSender, World world, Player player) {
         boolean failed = false;
 
-        int top_y  = -2147483647;
+        int top_y = -2147483647;
         int down_y = -2147483647;
-        int min_x  = -2147483647;
-        int max_x  = -2147483647;
-        int min_z  = -2147483647;
-        int max_z  = -2147483647;
+        int min_x = -2147483647;
+        int max_x = -2147483647;
+        int min_z = -2147483647;
+        int max_z = -2147483647;
 
         for (int i = player.getLocation().getBlockY(); i < 321; i++) {
             if (world.getBlockAt(player.getLocation().getBlockX(), i, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
@@ -181,13 +181,13 @@ public class RocketValidation {
                 break;
             }
         }
-        for (int x = player.getLocation().getBlockX() ; x <= player.getLocation().getBlockX()+5; x++) {
+        for (int x = player.getLocation().getBlockX(); x <= player.getLocation().getBlockX() + 5; x++) {
             if (world.getBlockAt(x, player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
                 max_x = x;
                 break;
             }
         }
-        for (int x = player.getLocation().getBlockX(); x >= player.getLocation().getBlockX()-5; x--) {
+        for (int x = player.getLocation().getBlockX(); x >= player.getLocation().getBlockX() - 5; x--) {
             if (world.getBlockAt(x, player.getLocation().getBlockY() - 1, player.getLocation().getBlockZ()).getType() == Material.LODESTONE) {
                 min_x = x;
                 break;
@@ -226,11 +226,11 @@ public class RocketValidation {
             commandSender.sendMessage("[RCPU] Rocket should have lodestone in it's walls by Z axis right on Y-level with dispencer.");
             failed = true;
         }
-        if (player.getLocation().getBlockX()-min_x != max_x - player.getLocation().getBlockX() || player.getLocation().getBlockZ()-min_z != max_z - player.getLocation().getBlockZ()) {
+        if (player.getLocation().getBlockX() - min_x != max_x - player.getLocation().getBlockX() || player.getLocation().getBlockZ() - min_z != max_z - player.getLocation().getBlockZ()) {
             commandSender.sendMessage("[RCPU] Rocket core (dispencer) should be in it's center");
             failed = true;
         }
-        if (max_x-min_x != max_z-min_z) {
+        if (max_x - min_x != max_z - min_z) {
             commandSender.sendMessage("[RCPU] Rocket should have equal lengths on X and Z axes");
             failed = true;
         }

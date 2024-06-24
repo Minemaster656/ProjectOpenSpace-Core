@@ -2,8 +2,8 @@ package openspacecore.util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -16,8 +16,8 @@ public class Utils {
 
     public static boolean isAir(Block block) {
         return block.getType() == Material.AIR ||
-               block.getType() == Material.CAVE_AIR ||
-               block.getType() == Material.VOID_AIR;
+                block.getType() == Material.CAVE_AIR ||
+                block.getType() == Material.VOID_AIR;
     }
 
     public static World getPlanet(String key) {

@@ -26,6 +26,8 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // TODO: extract datapack from jar / make world load it from us
+
         plugin = this;
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         Objects.requireNonNull(getServer().getPluginCommand("launchrocket")).setExecutor(new LaunchRocket());

@@ -2,10 +2,9 @@ package openspacecore.command;
 
 import openspacecore.Main;
 import openspacecore.rocket.RocketLaunch;
-import openspacecore.rocket.RocketValidation;
 import openspacecore.rocket.RocketUtils;
+import openspacecore.rocket.RocketValidation;
 import openspacecore.util.Utils;
-
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -13,13 +12,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.damage.DamageSource;
-import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Player;
-// import org.bukkit.inventory.Inventory;
-// import org.bukkit.inventory.InventoryHolder;
-
-import java.util.Objects;
 
 import static java.lang.Math.abs;
 
@@ -49,7 +42,7 @@ public class LaunchRocket implements CommandExecutor {
             commandSender.sendMessage("[RCPU] §cPlanet " + planet + " does not exist!");
             commandSender.sendMessage("§6§oPlanets that I know about:");
             for (World w : Main.plugin.getServer().getWorlds())
-                commandSender.sendMessage(" - "+w.getKey());
+                commandSender.sendMessage(" - " + w.getKey());
             return true;
         }
 
@@ -75,22 +68,23 @@ public class LaunchRocket implements CommandExecutor {
 
         int[] sizes = RocketValidation.validateRocketSize(commandSender, world, player);
 
-        if(sizes.length == 1) {
+        if (sizes.length == 1) {
             commandSender.sendMessage("[RCPU] §4§lAssembly failed!§r Fix assembling errors above and try again.");
             return true;
         }
         int top_y = sizes[0],
-            down_y = sizes[1],
-            max_x = sizes[2],
-            min_x = sizes[3],
-            max_z = sizes[4],
-            min_z = sizes[5];
+                down_y = sizes[1],
+                max_x = sizes[2],
+                min_x = sizes[3],
+                max_z = sizes[4],
+                min_z = sizes[5];
         commandSender.sendMessage("[RCPU] §a§lRocket assembled, running pre-launch checks...");
 
         int fuel_y = RocketValidation.validateRocketFuel(commandSender, player, down_y, world);
         if (fuel_y == -100) return true;
         Block[][][] rocket = RocketUtils.getRocketBlocks(top_y, down_y, max_x, min_x, max_z, min_z, world);
-        if (RocketValidation.validateRocketStands(commandSender, down_y, fuel_y, world, min_x, min_z, max_x, max_z)) return true;
+        if (RocketValidation.validateRocketStands(commandSender, down_y, fuel_y, world, min_x, min_z, max_x, max_z))
+            return true;
         if (RocketValidation.validateRocketIntegrity(commandSender, rocket, down_y, fuel_y))
             return true;
 
@@ -100,10 +94,10 @@ public class LaunchRocket implements CommandExecutor {
         commandSender.sendMessage("[RCPU] §6Rocket ready for launch!");
         if (!confirming) {
             commandSender.sendMessage("[RCPU] §aAll good!§r You can launch now. " +
-                                      "Append \"§6confirm§r\" at the end to proceed with launch");
+                    "Append \"§6confirm§r\" at the end to proceed with launch");
             commandSender.sendMessage("[RCPU] §eRocket will be landed on random place on the planet. " +
-                                      "In case if place for landing would not be found, you will be " +
-                                      "transported back to your original leaving location.");
+                    "In case if place for landing would not be found, you will be " +
+                    "transported back to your original leaving location.");
             return true;
         }
 
@@ -114,17 +108,18 @@ public class LaunchRocket implements CommandExecutor {
         int rz = -1;
         boolean found = false;
         int ry = -1;
-        random_location_find: for (int i = 0; i < 10; i++) {
+        random_location_find:
+        for (int i = 0; i < 10; i++) {
             int shift_x = Utils.randomRangeRandom(-2000, 2000),
-                shift_z = Utils.randomRangeRandom(-2000, 2000);
+                    shift_z = Utils.randomRangeRandom(-2000, 2000);
             rx = rocket_x + shift_x;
             rz = rocket_z + shift_z;
             int highest_y = targetPlanet.getHighestBlockAt(rx, rz).getY();
             if (highest_y > 280) continue;
             if (highest_y < 5) continue;
-            for(int x = -size >> 1; x < size >> 1; x++) {
-                for(int z = -size >> 1; z < size >> 1; z++) {
-                    int highest_y_here = targetPlanet.getHighestBlockAt(rx+x, rz+z).getY();
+            for (int x = -size >> 1; x < size >> 1; x++) {
+                for (int z = -size >> 1; z < size >> 1; z++) {
+                    int highest_y_here = targetPlanet.getHighestBlockAt(rx + x, rz + z).getY();
                     if (abs(highest_y_here - highest_y) > 2) continue random_location_find;
                 }
             }
@@ -136,25 +131,37 @@ public class LaunchRocket implements CommandExecutor {
             commandSender.sendMessage("[RCPU] §6§lLocation for safe landing not found... try again?");
             return true;
         }
-        commandSender.sendMessage("[RCPU] §a§lFound landing location! §r"+rx+" "+ry+" "+rz);
+        commandSender.sendMessage("[RCPU] §a§lFound landing location! §r" + rx + " " + ry + " " + rz);
 
-        World space = Main.plugin.getServer().getWorld("space");
-        assert space != null;
+        commandSender.sendMessage("[RCPU] Launching in 10 seconds.");
+        for (int i = 1; i < 10; i++) {
+            int li = i;
+            Main.plugin.getServer().getScheduler().runTaskLater(Main.plugin, () -> commandSender.sendMessage("[RCPU] " + (10 - li) + "..."), 20 * i);
+        }
 
-        RocketLaunch.launch(world, space, min_x + (size >> 1), min_z + (size >> 1), down_y, size, rocket, core);
-
-        int travelTime = 5; // in seconds
         final int lrx = rx, lry = ry, lrz = rz;
-        final int lpx = player.getLocation().getBlockX(), lpy = player.getLocation().getBlockY(), lpz = player.getLocation().getBlockZ();
-        commandSender.sendMessage("[RCPU] Estimated landing time: "+travelTime+" seconds.");
         Main.plugin.getServer().getScheduler().runTaskLater(Main.plugin, () -> {
+            World space = Main.plugin.getServer().getWorld("space");
+            assert space != null;
 
-            final Block[][][] lrocket = RocketUtils.getRocketBlocks(top_y, down_y, max_x, min_x, max_z, min_z, space);
-            Block lcore = space.getBlockAt(lpx, lpy - 1, lpz);
+            RocketLaunch.launch(world, space, min_x + (size >> 1), min_z + (size >> 1), down_y, size, rocket);
 
-            RocketLaunch.launch(space, targetPlanet,
-                    lrx, lrz, lry, size, lrocket, lcore);
-        }, 20*travelTime);
+            int travelTime = 25; // in seconds, not less than 10
+
+            for (int i = 1; i < 10; i++) {
+                int li = i;
+                Main.plugin.getServer().getScheduler().runTaskLater(Main.plugin, () -> commandSender.sendMessage("[RCPU] " + (10 - li) + "..."), (20 * (travelTime - 10)) + (20 * i));
+            }
+
+            commandSender.sendMessage("[RCPU] Estimated landing time: " + travelTime + " seconds.");
+            Main.plugin.getServer().getScheduler().runTaskLater(Main.plugin, () -> {
+
+                final Block[][][] lrocket = RocketUtils.getRocketBlocks(top_y, down_y, max_x, min_x, max_z, min_z, space);
+
+                RocketLaunch.launch(space, targetPlanet,
+                        lrx, lrz, lry, size, lrocket);
+            }, 20 * travelTime);
+        }, 20 * 10);
 
         return true;
     }
