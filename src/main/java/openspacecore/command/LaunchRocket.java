@@ -111,12 +111,15 @@ public class LaunchRocket implements CommandExecutor {
         random_location_find:
         for (int i = 0; i < 10; i++) {
             int shift_x = Utils.randomRangeRandom(-2000, 2000),
-                    shift_z = Utils.randomRangeRandom(-2000, 2000);
+                shift_z = Utils.randomRangeRandom(-2000, 2000);
             rx = rocket_x + shift_x;
             rz = rocket_z + shift_z;
-            int highest_y = targetPlanet.getHighestBlockAt(rx, rz).getY();
+            Block highest_block = targetPlanet.getHighestBlockAt(rx, rz);
+            int highest_y = highest_block.getY();
             if (highest_y > 280) continue;
             if (highest_y < 5) continue;
+            if (highest_block.getType() == Material.LAVA ||
+                highest_block.getType() == Material.WATER) continue;
             for (int x = -size >> 1; x < size >> 1; x++) {
                 for (int z = -size >> 1; z < size >> 1; z++) {
                     int highest_y_here = targetPlanet.getHighestBlockAt(rx + x, rz + z).getY();
@@ -141,7 +144,7 @@ public class LaunchRocket implements CommandExecutor {
 
         final int lrx = rx, lry = ry, lrz = rz;
         Main.plugin.getServer().getScheduler().runTaskLater(Main.plugin, () -> {
-            World space = Main.plugin.getServer().getWorld("space");
+            World space = Utils.getWorldFromKey("openspace:space");
             assert space != null;
 
             RocketLaunch.launch(world, space, min_x + (size >> 1), min_z + (size >> 1), down_y, size, rocket);

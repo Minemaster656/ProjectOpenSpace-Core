@@ -20,7 +20,11 @@ public class Utils {
                 block.getType() == Material.VOID_AIR;
     }
 
-    public static World getPlanet(String key) {
+    public static World getPlanet(String planet_name) { // TODO: actually get the *planet*, not *world*
+        return getWorldFromKey(planet_name);
+    }
+
+    public static World getWorldFromKey(String key) {
         NamespacedKey kkey = NamespacedKey.fromString(key);
         for (World w : Bukkit.getWorlds()) {
             if (w.getKey().equals(kkey)) return w;

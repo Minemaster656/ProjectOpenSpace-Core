@@ -6,6 +6,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BoundingBox;
 
 import java.util.ArrayList;
@@ -54,20 +57,27 @@ public class RocketLaunch {
                                 ent.teleport(new_pos);
                                 teleported.add(ent);
                             }
+                            if (block.getState() instanceof InventoryHolder) {
+                                Inventory inventory = ((InventoryHolder) block.getState()).getInventory();
+                                Inventory new_inventory = ((InventoryHolder) newblock.getState()).getInventory();
+                                for (int i = 0; i < inventory.getSize(); i++) {
+                                    new_inventory.setItem(i, inventory.getItem(i));
+                                }
+                            }
                         } else {
                             Block block = rocket[local_y][local_x][local_z];
                             Location current_loc = new Location(current, block.getX(), block.getY(), block.getZ());
                             Block curblock = current_loc.getBlock();
-                            curblock.breakNaturally();
+                            curblock.breakNaturally(new ItemStack(Material.AIR));
                         }
                     }
                 }
             }
         }
-        target.getBlockAt(rx + (size >> 1), ry, rz + (size >> 1)).breakNaturally();
+        target.getBlockAt(rx + (size >> 1), ry, rz + (size >> 1)).breakNaturally(new ItemStack(Material.AIR));
         target.getBlockAt(rx + (size >> 1), ry, rz + (size >> 1)).setType(Material.LODESTONE, false);
-        current.getBlockAt(rx + (size >> 1), ry, rz + (size >> 1)).breakNaturally();
-        current.createExplosion(rx + (size >> 1), ry + 1, rz + (size >> 1), 4f);
+        current.getBlockAt(rx + (size >> 1), ry, rz + (size >> 1)).breakNaturally(new ItemStack(Material.AIR));
+        current.createExplosion(rx + (size >> 1), ry + 1, rz + (size >> 1), 3*4f);
     }
 }
 

@@ -117,9 +117,10 @@ public class RocketValidation {
     public static int validateRocketFuel(CommandSender commandSender, Player player, int down_y, World world) {
         Inventory fuel_container = null;
         int fuel_y = -100;
-        for (int y = down_y; y < player.getLocation().getBlockY(); y++) {
-            if (world.getBlockAt(player.getLocation().getBlockX(), y, player.getLocation().getBlockZ()).getState() instanceof InventoryHolder) {
-                fuel_container = ((InventoryHolder) (world.getBlockAt(player.getLocation().getBlockX(), y, player.getLocation().getBlockZ()).getState())).getInventory();
+        for (int y = down_y; y < player.getLocation().getBlockY() - 1; y++) {
+            Block container = world.getBlockAt(player.getLocation().getBlockX(), y, player.getLocation().getBlockZ());
+            if (container.getState() instanceof InventoryHolder) {
+                fuel_container = ((InventoryHolder) (container.getState())).getInventory();
                 fuel_y = y;
                 break;
             }
