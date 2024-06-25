@@ -41,18 +41,34 @@ public class Utils {
             StellarObject stellarobj = null;
 
             if (Objects.equals(type, "planet")) {
-                StellarObject parent = Main.stellars.get(object.get("parent").getAsString());
+                String parent = object.get("parent").getAsString();
                 String dimension = object.get("dimension").getAsString();
                 int orbit = object.get("orbit").getAsInt();
                 stellarobj = new Planet(name, parent, orbit, dimension);
-                if (parent != null) {
-                    parent.addChild(name, stellarobj);
+                StellarObject stellarparent = Main.stellars.get(parent);
+                if (stellarparent != null) {
+                    stellarparent.addChild(stellarobj);
                 }
             } else if (Objects.equals(type, "star")) {
                 stellarobj = new Star(name);
             }
+            for (Map.Entry<String, StellarObject> stelr : Main.stellars.entrySet()) {
+                String stname = stelr.getKey();
+                StellarObject stobj = stelr.getValue();
+                StellarObject stpnt = stobj.getParent();
+                if (stpnt != null) {
+                    boolean contains = false;
+                    for (Map.Entry<String, StellarObject> stelrchild : stpnt.getChildren()) {
+                        if (stelrchild.getValue().getPathedName() == stname) {
+                            contains = true;
+                            break;
+                        }
+                    }
+                    if (!contains) stpnt.addChild(stobj);
+                }
+            }
             if (stellarobj == null) continue;
-            Main.stellars.put(name, stellarobj);
+            Main.stellars.put(stellarobj.getPathedName(), stellarobj);
         }
     }
 
@@ -71,22 +87,11 @@ public class Utils {
         return null;
     }
 
-    public static void printExistingStellars(CommandSender commandSender, int deep, Set<Map.Entry<String, StellarObject>> stellars) {
-        for (Map.Entry<String, StellarObject> stellarentry : stellars) {
-            StellarObject stellar = stellarentry.getValue();
-            if (stellar.getParent() != null) continue;
-            StringBuilder indent = new StringBuilder();
-            for(int i = 0; i < deep; i++) {
-                if (i == deep - 1) {
-                    indent.append(i == 0 ? "" : " ").append(stellar.getChildren().isEmpty() ? "`-" : "|-");
-                } else {
-                    indent.append("  ");
-                }
-            }
-            commandSender.sendMessage(indent + stellar.getName());
-            for (Map.Entry<String, StellarObject> child : stellar.getChildren()) {
-                printExistingStellars(commandSender, deep + 1, child.getValue().getChildren());
-            }
+    public static void printExistingStellars(CommandSender commandSender, Set<Map.Entry<String, StellarObject>> stellars) {
+        for (Map.Entry<String, StellarObject> stellare : stellars) {
+            StellarObject stellar = stellare.getValue();
+            commandSender.sendMessage(stellar.getPathedName());
+            if (!stellar.getChildren().isEmpty()) printExistingStellars(commandSender, stellar.getChildren());
         }
     }
 }

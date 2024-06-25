@@ -1,0 +1,32 @@
+{
+  "display": {
+    "background": "minecraft:textures/block/stone.png",
+    "icon": {
+      "item": "minecraft:enchanted_book"
+    },
+    "title": "Lift off!",
+    "description": "Ready for space",
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "space_stuffs_0": {
+      "trigger": "minecraft:consume_item",
+      "conditions": {
+        "item": {
+          "items": [
+            "minecraft:iron_helmet"
+          ]
+        }
+      }
+    },
+    "space_stuffs_1": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "to": "openspace:space"
+      }
+    }
+  }
+}

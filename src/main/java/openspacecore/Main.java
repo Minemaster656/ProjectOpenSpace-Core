@@ -11,6 +11,9 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.zip.ZipFile;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public final class Main extends JavaPlugin {
     public static Plugin plugin;
@@ -74,6 +77,47 @@ public final class Main extends JavaPlugin {
                     plugin.getLogger().info("Parsed openspace metadata from datapack " + fileEntry.getName());
                 }  catch (IOException ignored) {}
             }
+        }
+
+        plugin.getLogger().info("Parsed "+this.stellars.size()+" celeatial bodies: ");
+
+        // TODO: скопировать для UI в игре
+
+        for (Map.Entry<String, StellarObject> stellare : this.stellars.entrySet()) {
+            StellarObject stellar = stellare.getValue();
+            if (stellar.getParent() != null) continue;
+            String path = stellar.getPathedName();
+            plugin.getLogger().info(path);
+            printStellars(stellar.getChildren(), new boolean[0]);
+        }
+    }
+    void printStellars(Set<Map.Entry<String, StellarObject>> stellars, boolean[] progress) {
+        boolean[] prog = new boolean[progress.length + 1];
+        prog[prog.length - 1] = true;
+        System.arraycopy(progress, 0, prog, 0, progress.length);
+        progress = prog;
+        StellarObject last = null;
+        for (Map.Entry<String, StellarObject> stellare : stellars) {
+            last = stellare.getValue();
+        }
+        for (Map.Entry<String, StellarObject> stellare : stellars) {
+            StellarObject stellar = stellare.getValue();
+            if (Objects.equals(stellar, last)) {
+                progress[progress.length - 1] = false;
+            }
+            String indent = "";
+            for (int i = 0; i < progress.length; i++) {
+                boolean progressing = progress[i];
+                if (!progressing) {
+                    if (i == progress.length - 1) indent = indent + "`- ";
+                    else indent = indent + "   ";
+                    continue;
+                }
+                if (i == progress.length - 1) indent = indent + "|- ";
+                else indent = indent + "|  ";
+            }
+            plugin.getLogger().info(indent + stellar.getName());
+            if (!stellar.getChildren().isEmpty()) printStellars(stellar.getChildren(), progress);
         }
     }
 }

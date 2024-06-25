@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:red_sand"
+    },
+    "title": "Red planet",
+    "description": "Reach mars",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "reach_mars_0": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "to": "openspace:planet_mars"
+      }
+    }
+  },
+  "parent": "openspace:reach_moon"
+}

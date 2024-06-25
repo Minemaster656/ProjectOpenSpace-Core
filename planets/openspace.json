@@ -1,0 +1,30 @@
+[
+	{
+		"type": "planet",
+		"name": "mars",
+		"orbit": 4000,
+		"dimension": "openspace:planet_mars",
+		"parent": "sun"
+	},
+		{
+			"type": "planet",
+			"name": "deimos",
+			"orbit": 1000,
+			"dimension": "openspace:moon_deimos",
+			"parent": "sun/mars"
+		},
+		{
+			"type": "planet",
+			"name": "phobos",
+			"orbit": 1000,
+			"dimension": "openspace:moon_phobos",
+			"parent": "sun/mars"
+		},
+	{
+		"type": "planet",
+		"name": "moon",
+		"orbit": 1000,
+		"dimension": "openspace:moon_moon",
+		"parent": "sun/earth"
+	}
+]

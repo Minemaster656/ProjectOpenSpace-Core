@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:light_gray_concrete_powder"
+    },
+    "title": "A small step for human...",
+    "description": "Reach moon",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "reach_moon_0": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "to": "openspace:moon_moon"
+      }
+    }
+  },
+  "parent": "openspace:space_stuffs"
+}

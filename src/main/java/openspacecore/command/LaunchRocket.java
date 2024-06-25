@@ -43,7 +43,7 @@ public class LaunchRocket implements CommandExecutor {
         if (targetPlanet == null) {
             commandSender.sendMessage("[RCPU] §cPlanet " + planet + " does not exist!");
             commandSender.sendMessage("§6§oStellar objects that I know about:");
-            Utils.printExistingStellars(commandSender, 0, Main.stellars.entrySet());
+            Utils.printExistingStellars(commandSender, Main.stellars.entrySet());
             return true;
         }
 

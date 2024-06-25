@@ -1,0 +1,13 @@
+{
+  "type": "openspace:space",
+  "generator": {
+  	"type": "minecraft:flat",
+    "settings": {
+      "biome": "openspace:space_biome",
+      "features": false,
+      "lakes": false,
+      "layers": [],
+      "structure_overrides": []
+    }
+  }
+}
