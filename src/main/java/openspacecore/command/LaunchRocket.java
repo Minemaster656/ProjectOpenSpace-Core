@@ -29,6 +29,8 @@ public class LaunchRocket implements CommandExecutor {
             return true;
         }
 
+        if(RocketValidation.validateRocketCore(commandSender, core)) return true;
+
         if (strings.length == 0) {
             commandSender.sendMessage("[RCPU] §cPlanet expected, got nothing!");
             return true;
@@ -50,21 +52,6 @@ public class LaunchRocket implements CommandExecutor {
 
         commandSender.sendMessage("[RCPU] §6Assembling the rocket...");
         player.playSound(player.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 5, 1);
-
-        /*
-        Inventory core_inv;
-        if (core.getState() instanceof InventoryHolder) {
-            core_inv = ((InventoryHolder) (core.getState())).getInventory();
-        } else return true;
-
-        // ItemStack rocket_core_itemstack = core_inv.getItem(4);
-        //TODO: сделать чекер ядра
-        if (false) {
-            commandSender.sendMessage("В центральном слоте раздатчика должно лежать ядро ракеты!");
-            return true;
-        }
-
-         */
 
         int[] sizes = RocketValidation.validateRocketSize(commandSender, world, player);
 

@@ -7,11 +7,121 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RocketValidation {
+    public static boolean validateRocketCore(CommandSender commandSender, Block core) {
+        Inventory core_inv;
+        if (core.getState() instanceof InventoryHolder) {
+            core_inv = ((InventoryHolder) (core.getState())).getInventory();
+        } else return true;
+
+        ItemStack idx_0 = core_inv.getItem(0);
+        if (idx_0 == null) idx_0 = new ItemStack(Material.AIR);
+        ItemStack idx_1 = core_inv.getItem(1);
+        if (idx_1 == null) idx_1 = new ItemStack(Material.AIR);
+        ItemStack idx_2 = core_inv.getItem(2);
+        if (idx_2 == null) idx_2 = new ItemStack(Material.AIR);
+        ItemStack idx_3 = core_inv.getItem(3);
+        if (idx_3 == null) idx_3 = new ItemStack(Material.AIR);
+        ItemStack idx_4 = core_inv.getItem(4);
+        if (idx_4 == null) idx_4 = new ItemStack(Material.AIR);
+        ItemStack idx_5 = core_inv.getItem(5);
+        if (idx_5 == null) idx_5 = new ItemStack(Material.AIR);
+        ItemStack idx_6 = core_inv.getItem(6);
+        if (idx_6 == null) idx_6 = new ItemStack(Material.AIR);
+        ItemStack idx_7 = core_inv.getItem(7);
+        if (idx_7 == null) idx_7 = new ItemStack(Material.AIR);
+        ItemStack idx_8 = core_inv.getItem(8);
+        if (idx_8 == null) idx_8 = new ItemStack(Material.AIR);
+
+        if (idx_4.getType() != Material.OBSERVER) {
+            if (core_inv.contains(Material.OBSERVER)) {
+                commandSender.sendMessage("§7§oI need to put observer in the center of the core!");
+                return true;
+            }
+            commandSender.sendMessage("§7§oIt doesn't even have control circuitry! " +
+                    "Observer block should have one sufficient enough...");
+            return true;
+        }
+        if (idx_1.getType() != Material.LEVER) {
+            if (core_inv.contains(Material.LEVER)) {
+                commandSender.sendMessage("§7§oI need to put lever in top center slot!");
+                return true;
+            }
+            commandSender.sendMessage("§7§oIt doesn't even have a power switch! " +
+                    "Lever should be fine...");
+            return true;
+        }
+        if (idx_6.getType() != Material.REDSTONE_LAMP) {
+            if (core_inv.contains(Material.REDSTONE_LAMP)) {
+                commandSender.sendMessage("§7§oI need to put the lamp in bottom left slot!");
+                return true;
+            }
+            commandSender.sendMessage("§7§oIt doesn't even have a power indicator! " +
+                    "Maybe I should connect a redstone lamp in there...");
+            return true;
+        }
+        if (idx_0.getType() != Material.COMPARATOR) {
+            if (core_inv.contains(Material.COMPARATOR)) {
+                commandSender.sendMessage("§7§oI need to put comparator in top left slot!");
+                return true;
+            }
+            commandSender.sendMessage("§7§oIt didn't start... Looks like I forgot to add a CPU... " +
+                    "Comparator should do the work...");
+            return true;
+        }
+        if (idx_2.getType() != Material.REPEATER) {
+            if (core_inv.contains(Material.REPEATER)) {
+                commandSender.sendMessage("§7§oI need to put repeater in top right slot slot!");
+                return true;
+            }
+            commandSender.sendMessage("§7§oIt made a dim red light... I need a signal amplifier. " +
+                    "Repeater should be enough...");
+            return true;
+        }
+        if (idx_3.getType() != Material.LIGHT_WEIGHTED_PRESSURE_PLATE) {
+            if (core_inv.contains(Material.LIGHT_WEIGHTED_PRESSURE_PLATE)) {
+                commandSender.sendMessage("§7§oI need to put the gold plate in middle left slot!");
+                return true;
+            }
+            commandSender.sendMessage("§7§oIt made some random sounds and powered off... I forgot to add conductor. " +
+                    "Gold plate should work like one.");
+            return true;
+        }
+        if (idx_5.getType() != Material.NETHERITE_INGOT) {
+            if (core_inv.contains(Material.NETHERITE_INGOT)) {
+                commandSender.sendMessage("§7§oI need to put netherite ingot in middle right slot slot!");
+                return true;
+            }
+            commandSender.sendMessage("§7§oIt powered off immediately... looks like it overheated. " +
+                    "Netherite ingot can go like a radiator.");
+            return true;
+        }
+        if (idx_7.getType() != Material.CALIBRATED_SCULK_SENSOR) {
+            if (core_inv.contains(Material.CALIBRATED_SCULK_SENSOR)) {
+                commandSender.sendMessage("§7§oI need to put calibrated skulk sensor in the bottom middle slot!");
+                return true;
+            }
+            commandSender.sendMessage("§7§oIt made three beeps and halted... Maybe it needed a calibrated sound sensor? " +
+                    "Calibrated skulk sensor will do.");
+            return true;
+        }
+        if (idx_8.getType() != Material.DAYLIGHT_DETECTOR) {
+            if (core_inv.contains(Material.DAYLIGHT_DETECTOR)) {
+                commandSender.sendMessage("§7§oI need to put daylight detector in bottom right slot!");
+                return true;
+            }
+            commandSender.sendMessage("§7§oIt flashed a bright light and powered off... Looks like it needed a light sensor. " +
+                    "Daylight detector will do the work.");
+            return true;
+        }
+        return false;
+    }
+
     public static boolean validateRocketIntegrity(CommandSender commandSender, Block[][][] blocks, int down_y, int fuel_y) {
         int xMax = blocks[0].length;
         int yMax = blocks.length;
