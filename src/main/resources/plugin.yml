@@ -1,4 +1,5 @@
 name: ProjectOpenSpace-Core
+load: STARTUP
 version: '${version}'
 main: openspacecore.Main
 api-version: '1.20'

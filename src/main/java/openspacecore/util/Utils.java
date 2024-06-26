@@ -4,7 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import openspacecore.Main;
-import openspacecore.stellar.Planet;
+import openspacecore.stellar.Orbit;
+import openspacecore.stellar.Planetar;
 import openspacecore.stellar.Star;
 import openspacecore.stellar.StellarObject;
 import org.bukkit.Bukkit;
@@ -14,9 +15,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
@@ -38,45 +37,75 @@ public class Utils {
             String type = object.get("type").getAsString();
             String name = object.get("name").getAsString();
 
+            Main.plugin.getLogger().info("Discovered "+name+" of type "+type);
+
             StellarObject stellarobj = null;
 
-            if (Objects.equals(type, "planet")) {
+            if (Objects.equals(type, "planet") || Objects.equals(type, "moon")) {
                 String parent = object.get("parent").getAsString();
+                Main.plugin.getLogger().info("Parented to "+parent);
                 String dimension = object.get("dimension").getAsString();
                 int orbit = object.get("orbit").getAsInt();
-                stellarobj = new Planet(name, parent, orbit, dimension);
+                stellarobj = new Planetar(name, parent, orbit, dimension);
                 StellarObject stellarparent = Main.stellars.get(parent);
                 if (stellarparent != null) {
                     stellarparent.addChild(stellarobj);
                 }
             } else if (Objects.equals(type, "star")) {
                 stellarobj = new Star(name);
-            }
-            for (Map.Entry<String, StellarObject> stelr : Main.stellars.entrySet()) {
-                String stname = stelr.getKey();
-                StellarObject stobj = stelr.getValue();
-                StellarObject stpnt = stobj.getParent();
-                if (stpnt != null) {
-                    boolean contains = false;
-                    for (Map.Entry<String, StellarObject> stelrchild : stpnt.getChildren()) {
-                        if (Objects.equals(stelrchild.getValue().getPathedName(), stname)) {
-                            contains = true;
-                            break;
-                        }
-                    }
-                    if (!contains) stpnt.addChild(stobj);
+            } else if (Objects.equals(type, "orbit")) {
+                String parent = object.get("parent").getAsString();
+                Main.plugin.getLogger().info("Parented to "+parent);
+                String dimension = object.get("dimension").getAsString();
+                int orbit = object.get("orbit").getAsInt();
+                stellarobj = new Orbit(name, parent, orbit, dimension);
+                StellarObject stellarparent = Main.stellars.get(parent);
+                if (stellarparent != null) {
+                    stellarparent.addChild(stellarobj);
                 }
             }
             if (stellarobj == null) continue;
             Main.stellars.put(stellarobj.getPathedName(), stellarobj);
         }
     }
+    public static void completeInit() {
+        for (Map.Entry<String, StellarObject> stelr : Main.stellars.entrySet()) {
+            StellarObject stobj = stelr.getValue();
+            StellarObject stpnt = stobj.getParent();
+            if (stpnt == null) continue;
+            if (stpnt.getChild(stobj.getName()) == null) stpnt.addChild(stobj);
+        }
+        List<String> to_remove = new ArrayList<>();
+        for (Map.Entry<String, StellarObject> stelr : Main.stellars.entrySet()) {
+            if (stelr.getValue().getParent() == null) continue;
+            to_remove.add(stelr.getKey());
+        }
+        for (String key : to_remove) {
+            Main.plugin.getLogger().info("Removed parented stellar from roots: "+key);
+            Main.stellars.remove(key);
+        }
+    }
 
-    public static World getPlanet(String planet_name) {
-        StellarObject stellar = Main.stellars.get(planet_name);
-        if (stellar != null && !stellar.getUsable()) return null;
+    public static World getWorld(String targetQuery) {
+        StellarObject stellar = getStellar(targetQuery);
         if (stellar == null) return null;
         return getWorldFromKey(stellar.getDimension());
+    }
+    public static StellarObject getStellar(String targetQuery) {
+        StellarObject stellar = getStellarNoChecks(targetQuery);
+        if (stellar != null && stellar.getUnusable()) return null;
+        return stellar;
+    }
+    public static StellarObject getStellarNoChecks(String targetQuery) {
+        if (targetQuery == null) return null;
+        String[] parts = targetQuery.split("/");
+        StellarObject stellar = Main.stellars.get(parts[0]);
+        for (String part : parts) {
+            if (Objects.equals(part, parts[0])) continue;
+            if (stellar == null) return null;
+            stellar = stellar.getChild(part);
+        }
+        return stellar;
     }
 
     public static World getWorldFromKey(String key) {

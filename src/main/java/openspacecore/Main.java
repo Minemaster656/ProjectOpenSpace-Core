@@ -1,7 +1,9 @@
 package openspacecore;
 
+import openspacecore.command.completer.LaunchRocketTabCompleter;
 import openspacecore.stellar.StellarObject;
 import openspacecore.util.Utils;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,17 +22,53 @@ public final class Main extends JavaPlugin {
     public void onEnable() {
         plugin = this;
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        Objects.requireNonNull(getServer().getPluginCommand("launchrocket")).setExecutor(new LaunchRocket());
+        PluginCommand lr_command = Objects.requireNonNull(getServer().getPluginCommand("launchrocket"));
+        lr_command.setExecutor(new LaunchRocket());
+        lr_command.setTabCompleter(new LaunchRocketTabCompleter());
 
         File container = plugin.getServer().getWorldContainer();
-        String s_world = plugin.getServer().getWorlds().get(0).getName();
+        String s_world = "world";
         String datapack_path = container.getAbsolutePath() + File.separator + s_world + File.separator +
                 "datapacks" + File.separator;
         File datapacks_file = new File(datapack_path);
         //noinspection ResultOfMethodCallIgnored
         datapacks_file.mkdirs();
         File datapack_file = new File(datapack_path + "openspacecore_dp.zip");
-        if (!datapack_file.exists()) {
+        boolean invalid_hash = !datapack_file.exists();
+        if (!invalid_hash) {
+            int hash1, hash2;
+            try (InputStream datapack_is = plugin.getResource("datapack.zip")) {
+                assert datapack_is != null;
+                byte[] buf = new byte[1024];
+                StringBuilder tohash = new StringBuilder();
+                try {
+                    while (datapack_is.read(buf) > 0) {
+                        tohash.append(new String(buf));
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                hash1 = tohash.hashCode();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try (InputStream datapack_is = new FileInputStream(datapack_file)) {
+                byte[] buf = new byte[1024];
+                StringBuilder tohash = new StringBuilder();
+                try {
+                    while (datapack_is.read(buf) > 0) {
+                        tohash.append(new String(buf));
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                hash2 = tohash.hashCode();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            invalid_hash = hash1 != hash2;
+        }
+        if (invalid_hash) {
             try (InputStream datapack_is = plugin.getResource("datapack.zip")) {
                 try (FileOutputStream datapack_fw = new FileOutputStream(datapack_file)) {
                     assert datapack_is != null;
@@ -49,8 +87,8 @@ public final class Main extends JavaPlugin {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            plugin.getLogger().warning("Unpacked openspace core datapack. Restart the server to apply changes.");
-            plugin.getServer().shutdown();
+            plugin.getLogger().warning("Unpacked openspace core datapack.");
+            // plugin.getServer().shutdown();
         }
 
         for (final File fileEntry : Objects.requireNonNull(datapacks_file.listFiles())) {
@@ -76,8 +114,9 @@ public final class Main extends JavaPlugin {
             }
         }
 
-        plugin.getLogger().info("Parsed "+ stellars.size()+" celestial bodies: ");
+        Utils.completeInit();
 
+        plugin.getLogger().info("Parsed celestial bodies: ");
         Utils.printStellars(null);
     }
 }

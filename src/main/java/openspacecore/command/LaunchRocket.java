@@ -4,6 +4,7 @@ import openspacecore.Main;
 import openspacecore.rocket.RocketLaunch;
 import openspacecore.rocket.RocketUtils;
 import openspacecore.rocket.RocketValidation;
+import openspacecore.stellar.StellarObject;
 import openspacecore.util.Utils;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -13,8 +14,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import static java.lang.Math.abs;
 
 public class LaunchRocket implements CommandExecutor {
     @Override
@@ -36,12 +35,12 @@ public class LaunchRocket implements CommandExecutor {
             return true;
         }
 
-        String planet = strings[0];
-        World targetPlanet = Utils.getPlanet(planet);
-        //TODO: подгрузка миров из конфига
-        //TODO: проверка на существование планеты
-        if (targetPlanet == null) {
-            commandSender.sendMessage("[RCPU] §cPlanet " + planet + " does not exist!");
+        String targetQuery = strings[0];
+        World target = Utils.getWorld(targetQuery);
+        StellarObject targetStellar = Utils.getStellar(targetQuery);
+
+        if (target == null || targetStellar == null) {
+            commandSender.sendMessage("[RCPU] §cTarget " + targetQuery + " does not exist!");
             commandSender.sendMessage("§6§oStellar objects that I know about:");
             Utils.printStellars(commandSender);
             return true;
@@ -82,44 +81,18 @@ public class LaunchRocket implements CommandExecutor {
             commandSender.sendMessage("[RCPU] §aAll good!§r You can launch now. " +
                     "Append \"§6confirm§r\" at the end to proceed with launch");
             commandSender.sendMessage("[RCPU] §eRocket will be landed on random place on the planet. " +
-                    "In case if place for landing would not be found, you will be " +
-                    "transported back to your original leaving location.");
+                    "In case if place for landing would not be found, you will not " +
+                    "leave current planet, moon, or orbit.");
             return true;
         }
-
-        int rocket_x = core.getY(), rocket_z = core.getZ();
         int size = max_x - min_x + 1;
+        int[] found = targetStellar.findLandingLocation(core, size, target);
 
-        int rx = -1;
-        int rz = -1;
-        boolean found = false;
-        int ry = -1;
-        random_location_find:
-        for (int i = 0; i < 10; i++) {
-            int shift_x = Utils.randomRangeRandom(-2000, 2000),
-                shift_z = Utils.randomRangeRandom(-2000, 2000);
-            rx = rocket_x + shift_x;
-            rz = rocket_z + shift_z;
-            Block highest_block = targetPlanet.getHighestBlockAt(rx, rz);
-            int highest_y = highest_block.getY();
-            if (highest_y > 280) continue;
-            if (highest_y < 5) continue;
-            if (highest_block.getType() == Material.LAVA ||
-                highest_block.getType() == Material.WATER) continue;
-            for (int x = -size >> 1; x < size >> 1; x++) {
-                for (int z = -size >> 1; z < size >> 1; z++) {
-                    int highest_y_here = targetPlanet.getHighestBlockAt(rx + x, rz + z).getY();
-                    if (abs(highest_y_here - highest_y) > 2) continue random_location_find;
-                }
-            }
-            found = true;
-            ry = highest_y;
-            break;
-        }
-        if (!found) {
+        if (found == null) {
             commandSender.sendMessage("[RCPU] §6§lLocation for safe landing not found... try again?");
             return true;
         }
+        int rx = found[0], ry = found[1], rz = found[2];
         commandSender.sendMessage("[RCPU] §a§lFound landing location! §r" + rx + " " + ry + " " + rz);
 
         commandSender.sendMessage("[RCPU] Launching in 10 seconds.");
@@ -147,7 +120,7 @@ public class LaunchRocket implements CommandExecutor {
 
                 final Block[][][] lrocket = RocketUtils.getRocketBlocks(top_y, down_y, max_x, min_x, max_z, min_z, space);
 
-                RocketLaunch.launch(space, targetPlanet,
+                RocketLaunch.launch(space, target,
                         lrx, lrz, lry, size, lrocket);
             }, 20 * travelTime);
         }, 20 * 10);

@@ -1,10 +1,13 @@
 package openspacecore.stellar;
 
-import openspacecore.Main;
+import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static openspacecore.util.Utils.getStellarNoChecks;
 
 public class StellarObject {
     String name;
@@ -21,26 +24,30 @@ public class StellarObject {
         this.dimension = dimension;
     }
 
+    public int[] findLandingLocation(Block core, int size, World target) {
+        return null;
+    }
+
     public String getName() {
         return this.name;
     }
     public String getDimension() {
         return this.dimension;
     }
-    public boolean getUsable() {
-        return this.traversable;
+    public boolean getUnusable() {
+        return !this.traversable;
     }
     public void addChild(StellarObject child) {
-        this.children.put(child.getPathedName(), child);
+        this.children.put(child.getName(), child);
     }
-    public void removeChild(StellarObject child) {
-        this.children.remove(child.getPathedName());
+    public StellarObject getChild(String name) {
+        return this.children.get(name);
     }
     public Set<Map.Entry<String, StellarObject>> getChildren() {
         return this.children.entrySet();
     }
     public StellarObject getParent() {
-        return Main.stellars.get(this.parent);
+        return getStellarNoChecks(this.parent);
     }
     public String getPathedName() {
         StringBuilder str = new StringBuilder();

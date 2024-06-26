@@ -13,16 +13,6 @@
   },
   "criteria": {
     "space_stuffs_0": {
-      "trigger": "minecraft:consume_item",
-      "conditions": {
-        "item": {
-          "items": [
-            "minecraft:iron_helmet"
-          ]
-        }
-      }
-    },
-    "space_stuffs_1": {
       "trigger": "minecraft:changed_dimension",
       "conditions": {
         "to": "openspace:space"

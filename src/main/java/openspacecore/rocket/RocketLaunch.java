@@ -77,7 +77,6 @@ public class RocketLaunch {
         target.getBlockAt(rx + (size >> 1), ry, rz + (size >> 1)).breakNaturally(new ItemStack(Material.AIR));
         target.getBlockAt(rx + (size >> 1), ry, rz + (size >> 1)).setType(Material.LODESTONE, false);
         current.getBlockAt(rx + (size >> 1), ry, rz + (size >> 1)).breakNaturally(new ItemStack(Material.AIR));
-        current.createExplosion(rx + (size >> 1), ry + 1, rz + (size >> 1), 3*4f);
     }
 }
 
