@@ -59,7 +59,7 @@ public class Utils {
                 if (stpnt != null) {
                     boolean contains = false;
                     for (Map.Entry<String, StellarObject> stelrchild : stpnt.getChildren()) {
-                        if (stelrchild.getValue().getPathedName() == stname) {
+                        if (Objects.equals(stelrchild.getValue().getPathedName(), stname)) {
                             contains = true;
                             break;
                         }
@@ -87,11 +87,50 @@ public class Utils {
         return null;
     }
 
-    public static void printExistingStellars(CommandSender commandSender, Set<Map.Entry<String, StellarObject>> stellars) {
+    public static void printStellars(CommandSender commandSender) {
+        for (Map.Entry<String, StellarObject> stellare : Main.stellars.entrySet()) {
+            StellarObject stellar = stellare.getValue();
+            if (stellar.getParent() != null) continue;
+            String path = stellar.getPathedName();
+            if (commandSender == null) {
+                Main.plugin.getLogger().info(path);
+            } else {
+                commandSender.sendMessage(path);
+            }
+            printStellars(commandSender, stellar.getChildren(), new boolean[0]);
+        }
+    }
+    public static void printStellars(CommandSender commandSender, Set<Map.Entry<String, StellarObject>> stellars, boolean[] progress) {
+        boolean[] prog = new boolean[progress.length + 1];
+        prog[prog.length - 1] = true;
+        System.arraycopy(progress, 0, prog, 0, progress.length);
+        progress = prog;
+        StellarObject last = null;
+        for (Map.Entry<String, StellarObject> stellare : stellars) {
+            last = stellare.getValue();
+        }
         for (Map.Entry<String, StellarObject> stellare : stellars) {
             StellarObject stellar = stellare.getValue();
-            commandSender.sendMessage(stellar.getPathedName());
-            if (!stellar.getChildren().isEmpty()) printExistingStellars(commandSender, stellar.getChildren());
+            if (Objects.equals(stellar, last)) {
+                progress[progress.length - 1] = false;
+            }
+            StringBuilder indent = new StringBuilder();
+            for (int i = 0; i < progress.length; i++) {
+                boolean progressing = progress[i];
+                if (!progressing) {
+                    if (i == progress.length - 1) indent.append("`- ");
+                    else indent.append("   ");
+                    continue;
+                }
+                if (i == progress.length - 1) indent.append("|- ");
+                else indent.append("|  ");
+            }
+            if (commandSender == null) {
+                Main.plugin.getLogger().info(indent + stellar.getName());
+            } else {
+                commandSender.sendMessage(indent + stellar.getName());
+            }
+            if (!stellar.getChildren().isEmpty()) printStellars(commandSender, stellar.getChildren(), progress);
         }
     }
 }
