@@ -224,7 +224,7 @@ public class RocketValidation {
         return false;
     }
 
-    public static int validateRocketFuel(CommandSender commandSender, Player player, int down_y, World world) {
+    public static int validateRocketFuel(CommandSender commandSender, Player player, int down_y, World world, int need_fuel) {
         Inventory fuel_container = null;
         int fuel_y = -100;
         for (int y = down_y; y < player.getLocation().getBlockY() - 1; y++) {
@@ -240,8 +240,34 @@ public class RocketValidation {
             commandSender.sendMessage("[RCPU] [§7FUEL§r] §4§lFAIL");
             return -100;
         }
+
+        int fuel_level = getFuelLevel(fuel_container);
+
+        if (fuel_level < need_fuel) {
+            commandSender.sendMessage("[RCPU] §4A-ERR§r: Rocket does not have enough fuel for a flight ("+fuel_level+" < "+need_fuel+")");
+            commandSender.sendMessage("[RCPU] [§7FUEL§r] §4§lFAIL");
+            return -100;
+        }
+
         commandSender.sendMessage("[RCPU] [§7FUEL§r] §a§lOK");
         return fuel_y;
+    }
+
+    public static int getFuelLevel(Inventory fuel_container) {
+        int fuel_level = 0;
+        ItemStack[] contents = fuel_container.getContents();
+        for (ItemStack item : contents) {
+            if (item == null) continue;
+            Material type = item.getType();
+            int amount = item.getAmount();
+            int fuel = 0;
+            if (type == Material.COAL) fuel = 8;
+            if (type == Material.COAL_BLOCK) fuel = 80;
+            if (type == Material.LAVA_BUCKET) fuel = 100;
+            fuel *= amount;
+            fuel_level += fuel;
+        }
+        return fuel_level;
     }
 
     public static boolean validateWallBlock(Block block) {

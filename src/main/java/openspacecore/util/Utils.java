@@ -107,6 +107,27 @@ public class Utils {
         }
         return stellar;
     }
+    public static StellarObject getStellarFromWorld(World world) {
+        List<StellarObject> stellars = getAllStellars(null);
+        for (StellarObject stellar : stellars) {
+            if (!Objects.equals(stellar.getDimension(), world.getKey().toString()))
+                return stellar;
+        }
+        return null;
+    }
+
+    public static List<StellarObject> getAllStellars(Set<Map.Entry<String, StellarObject>> stellars_step) {
+        List<StellarObject> stellars = new ArrayList<>();
+        if (stellars_step == null) {
+            stellars_step = Main.stellars.entrySet();
+        }
+        for (Map.Entry<String, StellarObject> stellare : stellars_step) {
+            stellars.add(stellare.getValue());
+            if (!stellare.getValue().getChildren().isEmpty())
+                stellars.addAll(getAllStellars(stellare.getValue().getChildren()));
+        }
+        return stellars;
+    }
 
     public static World getWorldFromKey(String key) {
         NamespacedKey kkey = NamespacedKey.fromString(key);

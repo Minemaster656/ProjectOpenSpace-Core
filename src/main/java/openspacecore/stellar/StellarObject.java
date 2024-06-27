@@ -37,6 +37,9 @@ public class StellarObject {
     public boolean getUnusable() {
         return !this.traversable;
     }
+    public int getOrbit() {
+        return this.orbit;
+    }
     public void addChild(StellarObject child) {
         this.children.put(child.getName(), child);
     }
